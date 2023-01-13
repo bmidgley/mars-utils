@@ -8,10 +8,12 @@ export MUSER=user
 export MPASS=secret
 
 # Make gpx tracks from meshtastic logs
-mosquitto_sub -p 8883 -h $MHOST -t 'msh/+/json/#' -u $MUSER -P $MPASS --tls-use-os-certs -F %J >log.txt
-./mq2gpx.py <log.txt
+`mosquitto_sub -p 8883 -h $MHOST -t 'msh/+/json/#' -u $MUSER -P $MPASS --tls-use-os-certs -F %J >log.txt`
+
+`./mq2gpx.py <log.txt`
 
 # Send gpx tracks back to mqtt
-The logs are paced to be sent back at the same rate they were captured. Reads sample.gpx.
-./gpx2mq.py
+The logs are sent back with the same relative timing they had originally. Reads sample.gpx.
+
+`./gpx2mq.py`
 
