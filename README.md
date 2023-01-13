@@ -3,8 +3,11 @@ Code and documentation for MDRS projects
 
 # Setup
 pip3 install -r requirements.txt
+
 export MHOST=mqtt.hostname.x
+
 export MUSER=user
+
 export MPASS=secret
 
 # Make gpx tracks from meshtastic logs
