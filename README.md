@@ -20,3 +20,8 @@ The logs are sent back with the same relative timing they had originally. Reads 
 
 `./gpx2mq.py`
 
+The sample is this little jaunt. Note this is privately leased land and I only went on it with permission.
+
+<img width="359" alt="image" src="https://user-images.githubusercontent.com/63477/212521491-2eae3173-de6e-4d23-b437-d4b4afd9fbe5.png">
+
+
