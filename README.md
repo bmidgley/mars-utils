@@ -11,6 +11,9 @@ export MUSER=user
 export MPASS=secret
 
 # Make gpx tracks from meshtastic logs
+
+This will make one gpx file for each station reporting positions. It writes to stationlongname.gpx.
+
 `mosquitto_sub -p 8883 -h $MHOST -t 'msh/+/json/#' -u $MUSER -P $MPASS --tls-use-os-certs -F %J >log.txt`
 
 `./mq2gpx.py <log.txt`
