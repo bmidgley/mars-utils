@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# writes to stdout a stream to be sent to mqtt using mosquitto_pub
+# invokes mosquitto_pub with messages that represent re-running sample.gpx file as if it is happening now
 # requires environment variables MHOST, MUSER, MPASS
 
 send_cmd = 'mosquitto_pub -p 8883 -h $MHOST -t "msh/2/json/LongFast/!faker" -u $MUSER -P $MPASS --tls-use-os-certs'
