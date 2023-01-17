@@ -1,5 +1,5 @@
 # mars-utils
-Code and documentation for MDRS projects
+Code and documentation for MDRS projects. Requires the json option be turned on in the meshtastic node that publishes to mqtt.
 
 # Setup
 pip3 install -r requirements.txt
