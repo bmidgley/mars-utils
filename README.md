@@ -2,13 +2,14 @@
 Code and documentation for MDRS projects. Requires the json option be turned on in the meshtastic node that publishes to mqtt.
 
 # Setup
+
+```
 pip3 install -r requirements.txt
-
+sudo apt install -y mosquitto
 export MHOST=mqtt.hostname.x
-
 export MUSER=user
-
 export MPASS=secret
+```
 
 # Make gpx tracks from meshtastic logs
 
