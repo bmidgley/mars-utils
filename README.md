@@ -22,7 +22,7 @@ This will make one gpx file for each station reporting positions. It writes to s
 `./mq2gpx.py <log.txt`
 
 # Send gpx tracks back to mqtt
-The logs are sent back with the same relative timing they had originally. Reads sample.gpx.
+The logs are sent back with the same relative timing they had originally. It reads coordinates and labels the character using the name in sample.gpx: "Astronaut1".
 
 `./gpx2mq.py`
 
