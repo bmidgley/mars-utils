@@ -1,7 +1,7 @@
 # mars-utils
 Code and documentation for MDRS projects. Requires the json option be turned on in the meshtastic node that publishes to mqtt.
 
-Written for mac/linux, calling the mosquitto_sub command-line app directly.
+Written for mac/linux, calling the mosquitto_pub command-line app directly.
 
 # Setup
 
