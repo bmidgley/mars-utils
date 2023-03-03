@@ -1,0 +1,17 @@
+cat >/etc/systemd/system/ssh-tunnel-persistent.service <<EOF
+[Unit]
+Description=Persistent SSH Tunnel to port 22 on this server from port 9090 on external server (for encrypted traffic)
+After=network.target
+
+[Service]
+Restart=on-failure
+RestartSec=5
+ExecStart=/usr/bin/ssh -NTC -o ServerAliveInterval=60 -o ExitOnForwardFailure=yes -R9090:localhost:22 tunnel@evalink01.westus3.cloudapp.azure.com
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable ssh-tunnel-persistent.service
+sudo systemctl start ssh-tunnel-persistent.service
