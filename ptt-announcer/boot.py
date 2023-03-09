@@ -18,15 +18,14 @@ transmitting = False
 while True:
     ptt_value = ptt.read()
     if ptt_value < 30:
-        if transmitting == False:
+        if not transmitting:
             transmitting = True
             led(0)
             print("-talking")
     else:
-        if transmitting == True:
+        if transmitting:
             transmitting = False
             led(1)
             print("+talking")
       
     sleep(0.2)
-
