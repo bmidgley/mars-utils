@@ -1,4 +1,4 @@
-Texts out a message when ptt is pressed or released.
+Texts out a message when ptt is pressed or released. Also lights the LED on the esp8266 when it detects ptt.
 
 Runs on an esp8266 with micropython installed.
 
