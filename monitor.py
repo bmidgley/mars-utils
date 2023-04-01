@@ -34,7 +34,7 @@ for line in sys.stdin:
             battery = message['payload']['battery_level']
             print(f'{tst.ljust(15)}{station_name.ljust(15)}{battery}%')
         if 'relative_humidity' in message['payload'] and 'temperature' in message['payload']:
-            relative_humidity = round(message['payload']['relative_humidity'])
-            temperature = round(message['payload']['temperature'])
-            print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(15)}{str(temperature).ljust(15)}{str(relative_humidity).ljust(15)}')
+            temperature = str(round(message['payload']['temperature'])) + 'c'
+            relative_humidity = str(round(message['payload']['relative_humidity'])) + '%'
+            print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(15)}{temperature.ljust(15)}{relative_humidity.ljust(15)}')
 
