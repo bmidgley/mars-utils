@@ -28,7 +28,7 @@ for line in sys.stdin:
             alt = message['payload']['altitude']
         else:
             alt = None
-        print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(45)}http://maps.google.com/maps?z=12&t=m&q=loc:{lat}+{lon}')
+        print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(45)}http://maps.google.com/maps?z=12&t=k&q=loc:{lat}+{lon}')
     if message['type'] == 'telemetry' and station_name:
         if 'battery_level' in message['payload']:
             battery = message['payload']['battery_level']
