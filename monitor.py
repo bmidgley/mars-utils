@@ -6,7 +6,7 @@
 import sys
 import json
 
-stations = {1439117596: 'RadGateWay', -1951726776: 'Astro2-MDRS'}
+stations = {1439117596: 'RadGateWay', -1951726776: 'Astro2-MDRS', -240061613: 'Astro1-MDRS'}
 
 print(f'{"time".ljust(15)}{"name".ljust(15)}{"battery".ljust(15)}{"temperature".ljust(15)}{"humidity".ljust(15)}{"location"}')
 for line in sys.stdin:
