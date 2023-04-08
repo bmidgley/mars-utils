@@ -14,11 +14,11 @@ RECORD_SECONDS=15
 
 def save_audio(frames):
     filename = f'{datetime.datetime.now().isoformat()}-{sys.argv[1]}.wav'
-    wavfile=wave.open(filename, 'wb')
+    wavfile = wave.open(filename, 'wb')
     wavfile.setnchannels(CHANNELS)
     wavfile.setsampwidth(audio.get_sample_size(FORMAT))
     wavfile.setframerate(RATE)
-    wavfile.writeframes(b''.join(frames))#append frames recorded to file
+    wavfile.writeframes(b''.join(frames))
     wavfile.close()
     print(f'wrote {filename} with {len(frames)} frames')
 
@@ -36,7 +36,7 @@ while True:
     while len(frames) == 0:
         for i in range(0,int(RATE/CHUNK*RECORD_SECONDS)):
             data=stream.read(CHUNK, exception_on_overflow = False)
-            data_chunk=array('h',data)
+            data_chunk=array('h', data)
             vol=max(data_chunk)
             if vol > int(sys.argv[1]) or heard:
                 if not heard: print("heard")
