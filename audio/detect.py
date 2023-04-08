@@ -4,15 +4,16 @@ import pyaudio
 import wave
 from array import array
 import datetime
+import sys
 
 FORMAT=pyaudio.paInt16
 CHANNELS=1
-RATE=44100
+RATE=48000
 CHUNK=1024
 RECORD_SECONDS=15
 
 def save_audio(frames):
-    filename = datetime.datetime.now().isoformat() + '.wav'
+    filename = f'{datetime.datetime.now().isoformat()}-{sys.argv[1]}.wav'
     wavfile=wave.open(filename, 'wb')
     wavfile.setnchannels(CHANNELS)
     wavfile.setsampwidth(audio.get_sample_size(FORMAT))
@@ -34,10 +35,11 @@ while True:
 
     while len(frames) == 0:
         for i in range(0,int(RATE/CHUNK*RECORD_SECONDS)):
-            data=stream.read(CHUNK)
+            data=stream.read(CHUNK, exception_on_overflow = False)
             data_chunk=array('h',data)
             vol=max(data_chunk)
-            if vol > 4000 or heard:
+            if vol > int(sys.argv[1]) or heard:
+                if not heard: print("heard")
                 heard = True
                 frames.append(data)
 
