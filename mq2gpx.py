@@ -7,6 +7,7 @@ import sys
 import json
 import xmltodict
 import dateutil.parser
+import geopy.distance
 
 stations = {}
 points = {}
@@ -40,6 +41,25 @@ def seconds_apart(t1, t2):
     d2=dateutil.parser.isoparse(t2.replace('Z',''))
     return((d2 - d1).total_seconds())
 
+def create_runs(station_name, spoints):
+    # break points for the station up by clusters with no more than one hour between samples
+    while len(spoints) > 0:
+        pslice = []
+        pslice.append(spoints.pop(0))
+
+        while len(spoints) > 0 and seconds_apart(pslice[-1]['time'], spoints[0]['time']) < 60 * 30:
+            pslice.append(spoints.pop(0))
+
+        write_points(station_name, pslice)
+
+def distance(p1, p2):
+    tup1 = (p1["@lat"], p1["@lon"])
+    tup2 = (p2["@lat"], p2["@lon"])
+    return geopy.distance.geodesic(tup1, tup2).meters
+
+def ffdistance(p1, p2):
+    return abs(p2["@lat"] - p1["@lat"]) + abs(p2["@lon"] - p1["@lon"])
+
 for line in sys.stdin:
     full_message = json.loads(line)
     message = full_message['payload']
@@ -64,12 +84,14 @@ for line in sys.stdin:
 for station_name in points:
     spoints = points[station_name]
 
-    # break points for the station up by clusters with no more than one hour between samples
-    while len(spoints) > 0:
-        pslice = []
-        pslice.append(spoints.pop(0))
+    if spoints != []:
+        # remove points that are close together
+        moving_points = []
+        moving_points.append(spoints.pop(0))
+        while len(spoints) > 0:
+            point = spoints.pop(0)
+            delta = distance(moving_points[-1], point)
+            if delta > 20:
+                moving_points.append(point)
 
-        while len(spoints) > 0 and seconds_apart(pslice[-1]['time'], spoints[0]['time']) < 60 * 60:
-            pslice.append(spoints.pop(0))
-
-        write_points(station_name, pslice)
+        create_runs(station_name, moving_points)
