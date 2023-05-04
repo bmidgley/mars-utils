@@ -6,7 +6,6 @@
 import sys
 import json
 import xmltodict
-from datetime import datetime
 import dateutil.parser
 
 stations = {}
@@ -33,7 +32,6 @@ def write_points(station_name, points):
             }
         }
     }
-    # print(points[0])
     with open(f'{station_name}-{points[0]["time"]}.gpx', 'w') as gpx_file:
         gpx_file.write(xmltodict.unparse(gpx, pretty=True))
 
@@ -66,7 +64,7 @@ for line in sys.stdin:
 for station_name in points:
     spoints = points[station_name]
 
-    # break points[station_name] up by clusters with no more than one hour between samples
+    # break points for the station up by clusters with no more than one hour between samples
     while len(spoints) > 0:
         pslice = []
         pslice.append(spoints.pop(0))
