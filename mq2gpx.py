@@ -45,22 +45,23 @@ def seconds_apart(t1, t2):
 for line in sys.stdin:
     full_message = json.loads(line)
     message = full_message['payload']
-    if message['type'] == 'nodeinfo':
-        stations[message['from']] = message['payload']['longname']
-    if message['type'] == 'position' and message['from'] in stations:
-        station_name = stations[message['from']]
-        if not station_name in points: points[station_name] = []
-        entry = {
-            '@lat': message['payload']['latitude_i'] / 10000000,
-            '@lon': message['payload']['longitude_i']  / 10000000,
-            'time': full_message['tst'],
-        }
-        if 'altitude' in message['payload']:
-            entry['ele'] = message['payload']['altitude']
+    if 'type' in message:
+        if message['type'] == 'nodeinfo':
+            stations[message['from']] = message['payload']['longname']
+        if message['type'] == 'position' and message['from'] in stations:
+            station_name = stations[message['from']]
+            if not station_name in points: points[station_name] = []
+            entry = {
+                '@lat': message['payload']['latitude_i'] / 10000000,
+                '@lon': message['payload']['longitude_i']  / 10000000,
+                'time': full_message['tst'],
+            }
+            if 'altitude' in message['payload']:
+                entry['ele'] = message['payload']['altitude']
 
-        if samples != 0:
-            samples -= 1
-            points[station_name].append(entry)
+            if samples != 0:
+                samples -= 1
+                points[station_name].append(entry)
 
 for station_name in points:
     spoints = points[station_name]
