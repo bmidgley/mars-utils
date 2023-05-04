@@ -11,6 +11,7 @@ import geopy.distance
 
 stations = {}
 points = {}
+temps = {}
 samples = -1
 
 def write_points(station_name, points):
@@ -66,7 +67,12 @@ for line in sys.stdin:
     if 'type' in message:
         if message['type'] == 'nodeinfo':
             stations[message['from']] = message['payload']['longname']
-        if message['type'] == 'position' and message['from'] in stations:
+        elif message['type'] == 'telemetry' and message['from'] in stations:
+            station_name = stations[message['from']]
+            if 'temperature' in message['payload']:
+                temperature = round(message['payload']['temperature'])
+                temps[station_name] = temperature
+        elif message['type'] == 'position' and message['from'] in stations:
             station_name = stations[message['from']]
             if not station_name in points: points[station_name] = []
             entry = {
@@ -74,6 +80,8 @@ for line in sys.stdin:
                 '@lon': message['payload']['longitude_i']  / 10000000,
                 'time': full_message['tst'],
             }
+            if station_name in temps:
+                entry['extensions'] = { 'gpxtpx:TrackPointExtension' : [{ 'gpxtpx:atemp': temps[station_name] }]}
             if 'altitude' in message['payload']:
                 entry['ele'] = message['payload']['altitude']
 
