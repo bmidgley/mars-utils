@@ -17,24 +17,25 @@ for line in sys.stdin:
         station_name = stations[message['from']]
     else:
         station_name = None
-    if message['type'] == 'nodeinfo':
-        stations[message['from']] = message['payload']['longname']
-        station_name = message['payload']['longname']
-        print(f'{tst.ljust(15)}{station_name.ljust(15)}')
-    if message['type'] == 'position' and station_name:
-        lat = message['payload']['latitude_i'] / 10000000
-        lon = message['payload']['longitude_i']  / 10000000
-        if 'altitude' in message['payload']:
-            alt = message['payload']['altitude']
-        else:
-            alt = None
-        print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(45)}http://maps.google.com/maps?z=12&t=k&q=loc:{lat}+{lon}')
-    if message['type'] == 'telemetry' and station_name:
-        if 'battery_level' in message['payload']:
-            battery = message['payload']['battery_level']
-            print(f'{tst.ljust(15)}{station_name.ljust(15)}{battery}%')
-        if 'relative_humidity' in message['payload'] and 'temperature' in message['payload']:
-            temperature = str(round(message['payload']['temperature'])) + 'c'
-            relative_humidity = str(round(message['payload']['relative_humidity'])) + '%'
-            print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(15)}{temperature.ljust(15)}{relative_humidity.ljust(15)}')
+    if 'type' in message:
+        if message['type'] == 'nodeinfo':
+            stations[message['from']] = message['payload']['longname']
+            station_name = message['payload']['longname']
+            print(f'{tst.ljust(15)}{station_name.ljust(15)}')
+        if message['type'] == 'position' and station_name:
+            lat = message['payload']['latitude_i'] / 10000000
+            lon = message['payload']['longitude_i']  / 10000000
+            if 'altitude' in message['payload']:
+                alt = message['payload']['altitude']
+            else:
+                alt = None
+            print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(45)}http://maps.google.com/maps?z=12&t=k&q=loc:{lat}+{lon}')
+        if message['type'] == 'telemetry' and station_name:
+            if 'battery_level' in message['payload']:
+                battery = message['payload']['battery_level']
+                print(f'{tst.ljust(15)}{station_name.ljust(15)}{battery}%')
+            if 'relative_humidity' in message['payload'] and 'temperature' in message['payload']:
+                temperature = str(round(message['payload']['temperature'])) + 'c'
+                relative_humidity = str(round(message['payload']['relative_humidity'])) + '%'
+                print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(15)}{temperature.ljust(15)}{relative_humidity.ljust(15)}')
 
