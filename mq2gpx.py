@@ -13,6 +13,7 @@ stations = {}
 points = {}
 temps = {}
 samples = -1
+ignore_points = [{"@lat": 38.405744, "@lon": -110.792172}, {"@lat": 38.4064465, "@lon": -110.791946}]
 
 def write_points(station_name, points):
     if points == []: return
@@ -48,10 +49,11 @@ def create_runs(station_name, spoints):
         pslice = []
         pslice.append(spoints.pop(0))
 
-        while len(spoints) > 0 and seconds_apart(pslice[-1]['time'], spoints[0]['time']) < 60 * 30:
+        while len(spoints) > 0 and seconds_apart(pslice[-1]['time'], spoints[0]['time']) < 60 * 45:
             pslice.append(spoints.pop(0))
 
-        write_points(station_name, pslice)
+        if len(pslice) > 200:
+            write_points(station_name, pslice)
 
 def distance(p1, p2):
     tup1 = (p1["@lat"], p1["@lon"])
@@ -60,6 +62,11 @@ def distance(p1, p2):
 
 def ffdistance(p1, p2):
     return abs(p2["@lat"] - p1["@lat"]) + abs(p2["@lon"] - p1["@lon"])
+
+def ignore_point(point):
+    for ignore_point in ignore_points:
+        if distance(ignore_point, point) < 25: return True
+    return False
 
 for line in sys.stdin:
     full_message = json.loads(line)
@@ -85,21 +92,22 @@ for line in sys.stdin:
             if 'altitude' in message['payload']:
                 entry['ele'] = message['payload']['altitude']
 
-            if samples != 0:
-                samples -= 1
-                points[station_name].append(entry)
+            if not ignore_point(entry):
+                if samples != 0:
+                    samples -= 1
+                    points[station_name].append(entry)
 
 for station_name in points:
     spoints = points[station_name]
 
-    if spoints != []:
+    if len(spoints) > 0:
         # remove points that are close together
-        moving_points = []
-        moving_points.append(spoints.pop(0))
-        while len(spoints) > 0:
-            point = spoints.pop(0)
-            delta = distance(moving_points[-1], point)
-            if delta > 20:
-                moving_points.append(point)
+        # moving_points = []
+        # moving_points.append(spoints.pop(0))
+        # while len(spoints) > 0:
+        #     point = spoints.pop(0)
+        #     delta = distance(moving_points[-1], point)
+        #     if delta > 20:
+        #         moving_points.append(point)
 
-        create_runs(station_name, moving_points)
+        create_runs(station_name, spoints)
