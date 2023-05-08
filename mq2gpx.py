@@ -60,9 +60,6 @@ def distance(p1, p2):
     tup2 = (p2["@lat"], p2["@lon"])
     return geopy.distance.geodesic(tup1, tup2).meters
 
-def ffdistance(p1, p2):
-    return abs(p2["@lat"] - p1["@lat"]) + abs(p2["@lon"] - p1["@lon"])
-
 def ignore_point(point):
     for ignore_point in ignore_points:
         if distance(ignore_point, point) < 25: return True
@@ -101,13 +98,4 @@ for station_name in points:
     spoints = points[station_name]
 
     if len(spoints) > 0:
-        # remove points that are close together
-        # moving_points = []
-        # moving_points.append(spoints.pop(0))
-        # while len(spoints) > 0:
-        #     point = spoints.pop(0)
-        #     delta = distance(moving_points[-1], point)
-        #     if delta > 20:
-        #         moving_points.append(point)
-
         create_runs(station_name, spoints)
