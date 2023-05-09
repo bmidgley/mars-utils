@@ -8,6 +8,26 @@ from threading import Thread
 import sys
 import json
 import geopy.distance
+import os, pwd, grp
+
+def drop_privileges(uid_name='nobody', gid_name='nogroup'):
+    if os.getuid() != 0:
+        # We're not root so, like, whatever dude
+        return
+
+    # Get the uid/gid from the name
+    running_uid = pwd.getpwnam(uid_name).pw_uid
+    running_gid = grp.getgrnam(gid_name).gr_gid
+
+    # Remove group privileges
+    os.setgroups([])
+
+    # Try setting the new uid/gid
+    os.setgid(running_gid)
+    os.setuid(running_uid)
+
+    # Ensure a very conservative umask
+    old_umask = os.umask(0o077)
 
 ignore_points = [{"@lat": 38.405744, "@lon": -110.792172}, {"@lat": 38.4064465, "@lon": -110.791946}]
 stations = {1439117596: 'RadGateWay', -1951726776: 'Astro2-MDRS', -240061613: 'Astro1-MDRS'}
@@ -66,6 +86,7 @@ def main(line):
 
 if __name__ == "__main__":
     webServer = ThreadingHTTPServer((hostName, serverPort), MyServer)
+    drop_privileges()
     print("Server started http://%s:%s" % (hostName, serverPort))
 
     def service():
