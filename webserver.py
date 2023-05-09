@@ -53,7 +53,7 @@ def main(line):
                 alt = None
             dist = distance(hab, {"@lat": lat, "@lon": lon})
             print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(45)}{int(dist)} http://maps.google.com/maps?z=12&t=k&q=loc:{lat}+{lon}')
-            if dist > 20:
+            if dist > 20 and lat != 0 and lon != 0:
                 response[station_name] = {"position": [lat, lon], "time": iso, "distance": dist}
         if message['type'] == 'telemetry' and station_name:
             if 'battery_level' in message['payload']:
