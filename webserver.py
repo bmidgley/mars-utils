@@ -14,7 +14,7 @@ stations = {1439117596: 'RadGateWay', -1951726776: 'Astro2-MDRS', -240061613: 'A
 response = {}
 hab = ignore_points[1]
 hostName = "localhost"
-serverPort = 8080
+serverPort = 80
 
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
