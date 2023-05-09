@@ -18,10 +18,12 @@ serverPort = 80
 
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
+        payload = bytes(json.dumps(response), "utf-8")
         self.send_response(200)
         self.send_header("Content-type", "application/json")
+        self.send_header('Content-length', len(payload))
         self.end_headers()
-        self.wfile.write(bytes(json.dumps(response), "utf-8"))
+        self.wfile.write(payload)
 
 def distance(p1, p2):
     tup1 = (p1["@lat"], p1["@lon"])
