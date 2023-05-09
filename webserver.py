@@ -78,7 +78,7 @@ if __name__ == "__main__":
         print("Server stopped.")
 
     thread = Thread(target=service)
-    thread.setDaemon(True)
+    thread.daemon = True
     thread.start()
 
     print(f'{"time".ljust(15)}{"name".ljust(15)}{"battery".ljust(15)}{"temperature".ljust(15)}{"humidity".ljust(15)}{"location"}')
