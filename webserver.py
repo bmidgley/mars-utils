@@ -3,7 +3,7 @@
 # reads from stdin a log from or output piped from:
 # mosquitto_sub -p 8883 -h $MHOST -t 'msh/+/json/#' -u $MUSER -P $MPASS --tls-use-os-certs -F %J
 
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 import sys
 import json
@@ -65,7 +65,7 @@ def main(line):
                 print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(15)}{temperature.ljust(15)}{relative_humidity.ljust(15)}')
 
 if __name__ == "__main__":
-    webServer = HTTPServer((hostName, serverPort), MyServer)
+    webServer = ThreadingHTTPServer((hostName, serverPort), MyServer)
     print("Server started http://%s:%s" % (hostName, serverPort))
 
     def service():
