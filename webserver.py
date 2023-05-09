@@ -18,7 +18,7 @@ serverPort = 80
 
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        payload = bytes(json.dumps(response), "utf-8")
+        payload = bytes(json.dumps(response, indent = 4), "utf-8")
         self.send_response(200)
         self.send_header("Content-type", "application/json")
         self.send_header('Content-length', len(payload))
