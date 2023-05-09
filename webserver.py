@@ -4,7 +4,7 @@
 # mosquitto_sub -p 8883 -h $MHOST -t 'msh/+/json/#' -u $MUSER -P $MPASS --tls-use-os-certs -F %J
 
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from threading import Thread, current_thread
+from threading import Thread
 import sys
 import json
 import geopy.distance
@@ -13,7 +13,7 @@ ignore_points = [{"@lat": 38.405744, "@lon": -110.792172}, {"@lat": 38.4064465, 
 stations = {1439117596: 'RadGateWay', -1951726776: 'Astro2-MDRS', -240061613: 'Astro1-MDRS'}
 response = {}
 hab = ignore_points[1]
-hostName = "localhost"
+hostName = "0.0.0.0"
 serverPort = 80
 
 class MyServer(BaseHTTPRequestHandler):
