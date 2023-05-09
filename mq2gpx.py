@@ -6,6 +6,7 @@
 import sys
 import json
 import xmltodict
+import csv
 import dateutil.parser
 import geopy.distance
 
@@ -37,6 +38,19 @@ def write_points(station_name, points):
     }
     with open(f'{station_name}-{points[0]["time"]}.gpx', 'w') as gpx_file:
         gpx_file.write(xmltodict.unparse(gpx, pretty=True))
+
+    with open(f'{station_name}-{points[0]["time"]}.csv', 'w') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(['Time', 'Lat', 'Lon', 'Elevation', 'Temp'])
+        for point in points:
+            csv_writer.writerow([point['time'], point['@lat'], point['@lon'], point['ele'], temperature_for(point)])
+
+def temperature_for(point):
+    next_node = point
+    for node_name in ['extensions', 'gpxtpx:TrackPointExtension', 0, 'gpxtpx:atemp']:
+        if node_name != 0 and not node_name in next_node: return None
+        next_node = next_node[node_name]
+    return next_node
 
 def seconds_apart(t1, t2):
     d1=dateutil.parser.isoparse(t1.replace('Z',''))

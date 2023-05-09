@@ -10,6 +10,13 @@ import json
 import geopy.distance
 import os, pwd, grp
 
+ignore_points = [{"@lat": 38.405744, "@lon": -110.792172}, {"@lat": 38.4064465, "@lon": -110.791946}]
+stations = {1439117596: 'RadGateWay', -1951726776: 'Astro2-MDRS', -240061613: 'Astro1-MDRS'}
+response = {}
+hab = ignore_points[1]
+hostName = "0.0.0.0"
+serverPort = 80
+
 def drop_privileges(uid_name='nobody', gid_name='nogroup'):
     if os.getuid() != 0:
         # We're not root so, like, whatever dude
@@ -28,13 +35,6 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
 
     # Ensure a very conservative umask
     old_umask = os.umask(0o077)
-
-ignore_points = [{"@lat": 38.405744, "@lon": -110.792172}, {"@lat": 38.4064465, "@lon": -110.791946}]
-stations = {1439117596: 'RadGateWay', -1951726776: 'Astro2-MDRS', -240061613: 'Astro1-MDRS'}
-response = {}
-hab = ignore_points[1]
-hostName = "0.0.0.0"
-serverPort = 80
 
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
