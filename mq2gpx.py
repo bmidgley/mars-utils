@@ -43,7 +43,9 @@ def write_points(station_name, points):
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(['Time', 'Lat', 'Lon', 'Elevation', 'Temp'])
         for point in points:
-            csv_writer.writerow([point['time'], point['@lat'], point['@lon'], point['ele'], temperature_for(point)])
+            elevation = None
+            if 'ele' in point: elevation = point['ele']
+            csv_writer.writerow([point['time'], point['@lat'], point['@lon'], elevation, temperature_for(point)])
 
 def temperature_for(point):
     next_node = point
