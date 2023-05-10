@@ -2,6 +2,8 @@
 
 # reads from stdin a log from or output piped from:
 # mosquitto_sub -p 8883 -h $MHOST -t 'msh/+/json/#' -u $MUSER -P $MPASS --tls-use-os-certs -F %J
+# http://evalink01.westus3.cloudapp.azure.com/ce45fa11-fc6e-47b7-a7fb-ac3b3979b2b7.json
+# http://evalink01.westus3.cloudapp.azure.com/57f451ba-95c0-4d17-9c0f-22670042f212.json
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
@@ -12,6 +14,7 @@ import os, pwd, grp
 
 ignore_points = [{"@lat": 38.405744, "@lon": -110.792172}, {"@lat": 38.4064465, "@lon": -110.791946}]
 stations = {1439117596: 'RadGateWay', -1951726776: 'Astro2-MDRS', -240061613: 'Astro1-MDRS'}
+hardware_type = {}
 response = {}
 hab = ignore_points[1]
 hostName = "0.0.0.0"
@@ -62,6 +65,7 @@ def main(line):
     if 'type' in message:
         if message['type'] == 'nodeinfo':
             stations[message['from']] = message['payload']['longname']
+            hardware_type[message['from']] = message['payload']['hardware']
             station_name = message['payload']['longname']
             print(f'{tst.ljust(15)}{station_name.ljust(15)}')
         if message['type'] == 'position' and station_name:
@@ -74,7 +78,9 @@ def main(line):
             dist = distance(hab, {"@lat": lat, "@lon": lon})
             print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(45)}{int(dist)} http://maps.google.com/maps?z=12&t=k&q=loc:{lat}+{lon}')
             if dist > 20 and lat != 0 and lon != 0:
-                response[station_name] = {"position": [lat, lon], "time": iso, "distance": dist}
+                hw = -1
+                if message['from'] in hardware_type: hw = hardware_type[message['from']]
+                response[station_name] = {"position": [lat, lon], "time": iso, "distance": dist, 'hardware': hw}
         if message['type'] == 'telemetry' and station_name:
             if 'battery_level' in message['payload']:
                 battery = message['payload']['battery_level']
