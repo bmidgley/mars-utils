@@ -80,7 +80,9 @@ def main(line):
             if dist > 20 and lat != 0 and lon != 0:
                 hw = -1
                 if message['from'] in hardware_type: hw = hardware_type[message['from']]
-                response[station_name] = {"position": [lat, lon], "time": iso, "distance": dist, 'hardware': hw}
+                node_type = 'infrastructure'
+                if hw == 7: node_type = 'person'
+                response[station_name] = {"position": [lat, lon], "time": iso, "distance": round(dist), 'hardware': hw, 'node_type': node_type}
         if message['type'] == 'telemetry' and station_name:
             if 'battery_level' in message['payload']:
                 battery = message['payload']['battery_level']
