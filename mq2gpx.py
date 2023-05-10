@@ -98,7 +98,7 @@ for line in sys.stdin:
             entry = {
                 '@lat': message['payload']['latitude_i'] / 10000000,
                 '@lon': message['payload']['longitude_i']  / 10000000,
-                'time': full_message['tst'],
+                'time': full_message['tst'].replace("Z", ""),
             }
             if station_name in temps:
                 entry['extensions'] = { 'gpxtpx:TrackPointExtension' : [{ 'gpxtpx:atemp': temps[station_name] }]}
