@@ -65,7 +65,7 @@ def main(line):
     if 'type' in message:
         if message['type'] == 'nodeinfo':
             stations[message['from']] = message['payload']['longname']
-            hardware_type[message['from']] = message['payload']['hardware']
+            if 'hardware' in message['payload']: hardware_type[message['from']] = message['payload']['hardware']
             station_name = message['payload']['longname']
             print(f'{tst.ljust(15)}{station_name.ljust(15)}')
         if message['type'] == 'position' and station_name:

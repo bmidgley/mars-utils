@@ -19,14 +19,14 @@ with open(f'sample.gpx', 'r') as gpx_file:
 trk = data['gpx']['trk']
 name = trk['name']
 
-points = trk['trkseg'][1]['trkpt']
+points = trk['trkseg']['trkpt']
 
 start_time = parser.parse(points[0]['time'])
 adjustment = datetime.now(pytz.utc) - start_time
 
 for point in points:
-    nodeinfo = {'from': '1', 'payload': {'type': 'nodeinfo', 'longname': name}}
-    position = {'from': '1', 'payload': {
+    nodeinfo = {'from': '1', 'type': 'nodeinfo', 'payload': {'longname': name, 'hardware': 7}}
+    position = {'from': '1', 'type': 'position', 'payload': {'hardware': 7,
         'latitude_i': int(float(point['@lat'])*10000000),
         'longitude_i': int(float(point['@lon'])*10000000),
         'elevation': int(float(point['ele']))}

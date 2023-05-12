@@ -3,8 +3,6 @@
   <trk>
     <name>Astronaut1</name>
     <trkseg>
-    </trkseg>
-    <trkseg>
       <trkpt lat="38.407226" lon="-110.794372">
         <ele>1410.2</ele>
         <time>2022-10-16T17:23:17Z</time>
