@@ -18,7 +18,7 @@ hardware_type = {}
 response = {}
 hab = ignore_points[1]
 hostName = "0.0.0.0"
-serverPort = 80
+serverPortString = os.environ.get("SERVER_PORT") or "80"
 
 def drop_privileges(uid_name='nobody', gid_name='nogroup'):
     if os.getuid() != 0:
@@ -60,6 +60,7 @@ def main(line):
     iso = full_message['tst'].replace('Z', '')
     if message['from'] in stations:
         station_name = stations[message['from']]
+        if not station_name in response: response[station_name] = {}
     else:
         station_name = None
     if 'type' in message:
@@ -77,25 +78,29 @@ def main(line):
                 alt = None
             dist = distance(hab, {"@lat": lat, "@lon": lon})
             print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(45)}{int(dist)} http://maps.google.com/maps?z=12&t=k&q=loc:{lat}+{lon}')
-            if dist > 20 and lat != 0 and lon != 0:
+            if lat != 0 and lon != 0:
                 hw = -1
                 if message['from'] in hardware_type: hw = hardware_type[message['from']]
                 node_type = 'infrastructure'
                 if hw == 7: node_type = 'person'
-                response[station_name] = {"position": [lat, lon], "time": iso, "distance": round(dist), 'hardware': hw, 'node_type': node_type}
+                response[station_name].update({"position": [lat, lon], "time": iso, "distance": round(dist), 'hardware': hw, 'node_type': node_type})
         if message['type'] == 'telemetry' and station_name:
             if 'battery_level' in message['payload']:
                 battery = message['payload']['battery_level']
                 print(f'{tst.ljust(15)}{station_name.ljust(15)}{battery}%')
+                response[station_name].update({"battery": battery})
             if 'relative_humidity' in message['payload'] and 'temperature' in message['payload']:
-                temperature = str(round(message['payload']['temperature'])) + 'c'
-                relative_humidity = str(round(message['payload']['relative_humidity'])) + '%'
-                print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(15)}{temperature.ljust(15)}{relative_humidity.ljust(15)}')
+                temperature = round(message['payload']['temperature'])
+                temperature_string = f'{temperature}c'
+                relative_humidity = round(message['payload']['relative_humidity'])
+                relative_humidity_string = f'{relative_humidity}%'
+                print(f'{tst.ljust(15)}{station_name.ljust(15)}{"".ljust(15)}{temperature_string.ljust(15)}{relative_humidity_string.ljust(15)}')
+                response[station_name].update({"temperature": temperature, "humidity": relative_humidity})
 
 if __name__ == "__main__":
-    webServer = ThreadingHTTPServer((hostName, serverPort), MyServer)
+    webServer = ThreadingHTTPServer((hostName, int(serverPortString)), MyServer)
     drop_privileges()
-    print("Server started http://%s:%s" % (hostName, serverPort))
+    print("Server started http://%s:%s" % (hostName, serverPortString))
 
     def service():
         try:
