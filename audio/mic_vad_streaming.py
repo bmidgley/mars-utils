@@ -10,7 +10,19 @@ import wave
 import webrtcvad
 from halo import Halo
 from scipy import signal
+import RPi.GPIO as GPIO
+from luma.core.interface.serial import i2c, spi, pcf8574
+from luma.core.interface.parallel import bitbang_6800
+from luma.core.render import canvas
+from luma.oled.device import sh1107, ssd1306
 
+serial = i2c(port=1, address=0x3C)
+device = ssd1306(serial)
+with canvas(device) as draw:
+    draw.rectangle(device.bounding_box, outline="white", fill="black")
+    draw.text((30, 40), "Listening", fill="white")
+
+ptt_pin = 25
 logging.basicConfig(level=20)
 
 class Audio(object):
@@ -133,7 +145,7 @@ class VADAudio(Audio):
             if len(frame) < 640:
                 return
 
-            is_speech = self.vad.is_speech(frame, self.sample_rate)
+            is_speech = GPIO.input(ptt_pin)
 
             if not triggered:
                 ring_buffer.append((frame, is_speech))
@@ -195,10 +207,18 @@ def main(ARGS):
                 wav_data = bytearray()
             text = stream_context.finishStream()
             print("Recognized: %s" % text)
+
+            with canvas(device) as draw:
+                draw.rectangle(device.bounding_box, outline="white", fill="black")
+                draw.text((1, 1), text, fill="white")
+
             stream_context = model.createStream()
 
 if __name__ == '__main__':
     DEFAULT_SAMPLE_RATE = 16000
+
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(ptt_pin, GPIO.IN)
 
     import argparse
     parser = argparse.ArgumentParser(description="Stream from microphone to DeepSpeech using VAD")
