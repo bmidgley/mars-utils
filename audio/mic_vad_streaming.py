@@ -10,14 +10,15 @@ import wave
 import webrtcvad
 from halo import Halo
 from scipy import signal
+import os
 import RPi.GPIO as GPIO
 from luma.core.interface.serial import i2c, spi, pcf8574
 from luma.core.interface.parallel import bitbang_6800
 from luma.core.render import canvas
-from luma.oled.device import sh1107, ssd1306
+from luma.oled.device import sh1106
 
 serial = i2c(port=1, address=0x3C)
-device = ssd1306(serial)
+device = sh1106(serial)
 with canvas(device) as draw:
     draw.rectangle(device.bounding_box, outline="white", fill="black")
     draw.text((30, 40), "Listening", fill="white")
@@ -209,8 +210,9 @@ def main(ARGS):
             print("Recognized: %s" % text)
 
             with canvas(device) as draw:
-                draw.rectangle(device.bounding_box, outline="white", fill="black")
-                draw.text((1, 1), text, fill="white")
+                draw.rectangle(device.bounding_box, outline="black", fill="black")
+                draw.text((0, 0), text, fill="white")
+            if text != '': os.system(f'meshtastic --sendtext "{text}"')
 
             stream_context = model.createStream()
 
