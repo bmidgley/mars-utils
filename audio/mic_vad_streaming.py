@@ -211,7 +211,8 @@ def main(ARGS):
 
             with canvas(device) as draw:
                 draw.rectangle(device.bounding_box, outline="black", fill="black")
-                draw.text((0, 0), text, fill="white")
+                for line in [0, 1, 2, 3, 4, 5, 6]:
+                  draw.text((line * -128, line * 9), text, fill="white")
             if text != '': os.system(f'meshtastic --sendtext "{text}"')
 
             stream_context = model.createStream()
