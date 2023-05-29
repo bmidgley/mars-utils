@@ -3,6 +3,10 @@ Code and documentation for MDRS projects. Requires the json option be turned on 
 
 Written for mac/linux, calling the mosquitto_pub command-line app directly.
 
+# Demo
+
+* https://www.youtube.com/watch?v=gMkGpYlth6w
+
 # Setup
 
 ```
