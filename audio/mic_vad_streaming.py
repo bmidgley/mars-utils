@@ -10,7 +10,7 @@ import wave
 import webrtcvad
 from halo import Halo
 from scipy import signal
-import os
+import subprocess
 import RPi.GPIO as GPIO
 from luma.core.interface.serial import i2c, spi, pcf8574
 from luma.core.interface.parallel import bitbang_6800
@@ -213,7 +213,7 @@ def main(ARGS):
                 draw.rectangle(device.bounding_box, outline="black", fill="black")
                 for line in [0, 1, 2, 3, 4, 5, 6]:
                   draw.text((line * -128, line * 9), text, fill="white")
-            if text != '': os.system(f'meshtastic --sendtext "{text}"')
+            if text != '': subprocess.run(['meshtastic', '--sendtext', text])
 
             stream_context = model.createStream()
 
