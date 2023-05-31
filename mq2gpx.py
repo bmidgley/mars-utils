@@ -110,6 +110,18 @@ for line in sys.stdin:
                     samples -= 1
                     points[station_name].append(entry)
 
+                if len(points[station_name]) > 2:
+                    mid_point = points[station_name][-2]
+                    old_point = points[station_name][-3]
+
+                    # eliminate the middle point if it seems like an outlier
+                    d1 = distance(entry, mid_point)
+                    d2 = distance(entry, old_point)
+                    d3 = distance(mid_point, old_point)
+
+                    if d3 < d1 and d3 < d2:
+                        del points[station_name][-2]
+
 for station_name in points:
     spoints = points[station_name]
 
