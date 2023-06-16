@@ -34,4 +34,8 @@ The sample is this little jaunt around MDRS. Note this is privately leased land 
 
 <img width="359" alt="image" src="https://user-images.githubusercontent.com/63477/212521491-2eae3173-de6e-4d23-b437-d4b4afd9fbe5.png">
 
+# Serve json with data on latest positions
 
+Uses localhost and no encryption, so it must run on the mosquitto host and have SSL added via proxy
+
+`mosquitto_sub -p 1883 -h localhost -t 'msh/+/json/#' -u $MUSER -P $MPASS -F %J | tee -a mqlog.txt | ./webserver.py`
