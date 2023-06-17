@@ -42,4 +42,4 @@ Uses localhost and no encryption, so it must run on the mosquitto host and have 
 
 with history added in:
 
-`(cat ../mqlog.txt ; mosquitto_sub -p 1883 -h localhost -t 'msh/+/json/#' -u $MUSER -P $MPASS -F %J | tee -a ../mqlog.txt) | ./webserver.py`
+`./webserver-logger.sh`
