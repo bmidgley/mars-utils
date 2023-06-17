@@ -36,10 +36,6 @@ The sample is this little jaunt around MDRS. Note this is privately leased land 
 
 # Serve json with data on latest positions
 
-Uses localhost and no encryption, so it must run on the mosquitto host and have SSL added via proxy:
-
-`mosquitto_sub -p 1883 -h localhost -t 'msh/+/json/#' -u $MUSER -P $MPASS -F %J | tee -a mqlog.txt | ./webserver.py`
-
-with history added in:
+Uses localhost and no encryption, so it must run on the mosquitto host and have SSL added via proxy. Reads and stores ~/mqlog.txt:
 
 `./webserver-logger.sh`
