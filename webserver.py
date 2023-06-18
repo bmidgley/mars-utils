@@ -99,10 +99,13 @@ def main(line):
                 response[station_name].update({"temperature": temperature, "humidity": relative_humidity})
         if message['type'] == 'text' and station_name:
             text = message['payload']['text']
+            position = None
+            if "position" in response[station_name]:
+                position = response[station_name]['position']
             print(f'{tst.ljust(15)}{station_name.ljust(16)}{"".ljust(45)}{text}')
-            if 'text' not in response[station_name]:
-                response[station_name]['text'] = {}
-            response[station_name]['text'].update({iso: text})
+            if 'points' not in response[station_name]:
+                response[station_name]['points'] = {}
+            response[station_name]['points'].update({iso: {"text": text, "position": position}})
 
 if __name__ == "__main__":
     webServer = ThreadingHTTPServer((hostName, int(serverPortString)), MyServer)
