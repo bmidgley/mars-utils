@@ -57,7 +57,7 @@ def distance(p1, p2):
 def main(line):
     full_message = json.loads(line)
     message = full_message['payload']
-    iso = datetime.fromtimestamp(message['timestamp']).isoformat()
+    iso = datetime.fromtimestamp(message['timestamp']).astimezone().isoformat()
     tst = iso[11:19]
     if message['from'] in stations:
         station_name = stations[message['from']]
