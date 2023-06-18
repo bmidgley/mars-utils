@@ -14,11 +14,12 @@ from datetime import datetime
 
 stations = {}
 points = {}
+wpoints = {}
 temps = {}
 samples = -1
 ignore_points = [{"@lat": 38.405744, "@lon": -110.792172}, {"@lat": 38.4064465, "@lon": -110.791946}]
 
-def write_points(station_name, points):
+def write_points(station_name, points, waypoints):
     if points == []: return
     gpx = {
         'gpx': {
@@ -29,6 +30,7 @@ def write_points(station_name, points):
             '@version': "1.1", 
             '@xmlns:xsi': "http://www.w3.org/2001/XMLSchema-instance", 
             '@xsi:schemaLocation': "http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd",
+            'wpt': waypoints,
             'trk': {
                 'name': station_name,
                 'trkseg': {
@@ -61,7 +63,7 @@ def seconds_apart(t1, t2):
     d2=dateutil.parser.isoparse(t2)
     return((d2 - d1).total_seconds())
 
-def create_runs(station_name, spoints):
+def create_runs(station_name, spoints, waypoints):
     # break points for the station up by clusters with no more than one hour between samples
     while len(spoints) > 0:
         pslice = []
@@ -71,7 +73,7 @@ def create_runs(station_name, spoints):
             pslice.append(spoints.pop(0))
 
         if len(pslice) > 200:
-            write_points(station_name, pslice)
+            write_points(station_name, pslice, waypoints)
 
 def distance(p1, p2):
     tup1 = (p1["@lat"], p1["@lon"])
@@ -94,6 +96,14 @@ for line in sys.stdin:
             if 'temperature' in message['payload']:
                 temperature = round(message['payload']['temperature'])
                 temps[station_name] = temperature
+        elif message['type'] == 'text' and message['from'] in stations:
+            station_name = stations[message['from']]
+            if not station_name in wpoints: wpoints[station_name] = []
+            text = message['payload']['text']
+            if station_name in points:
+                entry = dict(points[station_name][-1])
+                entry['name'] = f'{station_name}: {text}'
+                wpoints[station_name].append(entry)
         elif message['type'] == 'position' and message['from'] in stations:
             station_name = stations[message['from']]
             if not station_name in points: points[station_name] = []
@@ -127,6 +137,9 @@ for line in sys.stdin:
 
 for station_name in points:
     spoints = points[station_name]
+    waypoints = []
+    if station_name in wpoints:
+        waypoints = wpoints[station_name]
 
     if len(spoints) > 0:
-        create_runs(station_name, spoints)
+        create_runs(station_name, spoints, waypoints)
