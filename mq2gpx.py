@@ -9,6 +9,8 @@ import xmltodict
 import csv
 import dateutil.parser
 import geopy.distance
+import pytz
+from datetime import datetime
 
 stations = {}
 points = {}
@@ -55,8 +57,8 @@ def temperature_for(point):
     return next_node
 
 def seconds_apart(t1, t2):
-    d1=dateutil.parser.isoparse(t1.replace('Z',''))
-    d2=dateutil.parser.isoparse(t2.replace('Z',''))
+    d1=dateutil.parser.isoparse(t1)
+    d2=dateutil.parser.isoparse(t2)
     return((d2 - d1).total_seconds())
 
 def create_runs(station_name, spoints):
@@ -95,10 +97,11 @@ for line in sys.stdin:
         elif message['type'] == 'position' and message['from'] in stations:
             station_name = stations[message['from']]
             if not station_name in points: points[station_name] = []
+            iso = datetime.fromtimestamp(message['timestamp']).astimezone(pytz.utc).isoformat()
             entry = {
                 '@lat': message['payload']['latitude_i'] / 10000000,
                 '@lon': message['payload']['longitude_i']  / 10000000,
-                'time': full_message['tst'].replace("Z", ""),
+                'time': iso,
             }
             if station_name in temps:
                 entry['extensions'] = { 'gpxtpx:TrackPointExtension' : [{ 'gpxtpx:atemp': temps[station_name] }]}
