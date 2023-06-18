@@ -100,7 +100,7 @@ def main(line):
                 response[station_name].update({"temperature": temperature, "humidity": relative_humidity})
         if message['type'] == 'text' and station_name:
             text = message['payload']['text']
-            position = {}
+            position = []
             if "position" in response[station_name]:
                 position = response[station_name]['position']
             print(f'{tst.ljust(15)}{station_name.ljust(16)}{"".ljust(45)}{text}')
