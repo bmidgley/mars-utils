@@ -8,6 +8,7 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
 from datetime import datetime
+import pytz
 import sys
 import json
 import geopy.distance
@@ -57,7 +58,7 @@ def distance(p1, p2):
 def main(line):
     full_message = json.loads(line)
     message = full_message['payload']
-    iso = datetime.fromtimestamp(message['timestamp']).astimezone().isoformat()
+    iso = datetime.fromtimestamp(message['timestamp']).astimezone(pytz.utc).isoformat()
     tst = iso[11:19]
     if message['from'] in stations:
         station_name = stations[message['from']]
@@ -125,5 +126,5 @@ if __name__ == "__main__":
     thread.daemon = True
     thread.start()
 
-    print(f'{"time".ljust(15)}{"name".ljust(16)}{"battery".ljust(15)}{"temperature".ljust(15)}{"humidity".ljust(15)}{"location"}')
+    print(f'{"time".ljust(15)}{"name".ljust(16)}{"battery".ljust(15)}{"temperature".ljust(15)}{"humidity".ljust(15)}{"extra"}')
     for line in sys.stdin: main(line)
