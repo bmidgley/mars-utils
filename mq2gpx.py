@@ -102,7 +102,7 @@ for line in sys.stdin:
             text = message['payload']['text']
             if station_name in points:
                 entry = dict(points[station_name][-1])
-                entry['name'] = f'{station_name}: {text}'
+                entry['name'] = text
                 wpoints[station_name].append(entry)
         elif message['type'] == 'position' and message['from'] in stations:
             station_name = stations[message['from']]
