@@ -92,9 +92,9 @@ def main(line):
                 print(f'{tst.ljust(15)}{station_name.ljust(16)}{battery}%')
                 response[station_name].update({"battery": battery})
             if 'relative_humidity' in message['payload'] and 'temperature' in message['payload']:
-                temperature = round(message['payload']['temperature'])
+                temperature = round(message['payload']['temperature'] or -1)
                 temperature_string = f'{temperature}c'
-                relative_humidity = round(message['payload']['relative_humidity'])
+                relative_humidity = round(message['payload']['relative_humidity'] or -1)
                 relative_humidity_string = f'{relative_humidity}%'
                 print(f'{tst.ljust(15)}{station_name.ljust(16)}{"".ljust(15)}{temperature_string.ljust(15)}{relative_humidity_string.ljust(15)}')
                 response[station_name].update({"temperature": temperature, "humidity": relative_humidity})
