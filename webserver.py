@@ -98,6 +98,12 @@ def main(line):
                 relative_humidity_string = f'{relative_humidity}%'
                 print(f'{tst.ljust(15)}{station_name.ljust(16)}{"".ljust(15)}{temperature_string.ljust(15)}{relative_humidity_string.ljust(15)}')
                 if temperature != -1: response[station_name].update({"temperature": temperature, "humidity": relative_humidity})
+            if message['payload'].get('current'):
+                current = round(message['payload']['current'])
+                response[station_name].update({"current": current})
+            if message['payload'].get('voltage'):
+                voltage = round(message['payload']['voltage'], 3)
+                response[station_name].update({"voltage": voltage})
         if message['type'] == 'text' and station_name:
             text = message['payload']['text']
             position = []
