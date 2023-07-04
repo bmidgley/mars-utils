@@ -43,7 +43,6 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
 
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        print(f'path = [{self.path}]')
         if self.path == '/57f451ba-95c0-4d17-9c0f-22670042f212.html':
             with open('index.html', 'r') as file: payload = bytes(file.read(), 'utf-8')
             self.send_response(200)
@@ -74,7 +73,7 @@ def distance(p1, p2):
 
 def add_time(station_name, seconds):
     tm = datetime.fromtimestamp(seconds)
-    #tm = time.astimezone(pytz.utc)
+    tm = tm.astimezone(pytz.utc)
     if station_name not in response: response[station_name] = {}
     response[station_name].update({"time": tm.isoformat()})
 
