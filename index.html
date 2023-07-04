@@ -51,7 +51,7 @@ setInterval(async function() {
                if(value.voltage < 4.9 && value.battery) {
                     line1.append(n, value.battery);
                } else {
-                    pc = value.voltage / 13.0;
+                    pc = (value.voltage - 11.65) * 83; // 0% at 11.65v to 100% at 12.85v
                     line1.append(n, pc);
                }
             }
