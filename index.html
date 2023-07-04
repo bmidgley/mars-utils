@@ -15,7 +15,7 @@ function newchart(name) {
     var line6 = new TimeSeries();
     sc.addTimeSeries(line1, { strokeStyle:'rgb(0, 250, 0)', fillStyle:'rgba(0, 250, 0, 0.2)', lineWidth:3 });
     sc.addTimeSeries(line2, { strokeStyle:'rgb(255, 0, 0)', fillStyle:'rgba(255, 0, 0, 0.5)', lineWidth:3 });
-    sc.addTimeSeries(line3, { strokeStyle:'rgb(0, 50, 50)', fillStyle:'rgba(0, 50, 50, 0.5)', lineWidth:3 });
+    sc.addTimeSeries(line3, { strokeStyle:'rgb(0, 50, 150)', fillStyle:'rgba(0, 50, 150, 0.5)', lineWidth:3 });
     sc.addTimeSeries(line4, { strokeStyle:'rgb(50, 50, 50)', fillStyle:'rgba(20, 20, 20, 0.2)', lineWidth:3 });
     sc.addTimeSeries(line5, { strokeStyle:'rgb(0, 250, 50)', lineWidth:1 });
     sc.addTimeSeries(line6, { strokeStyle:'rgb(250, 0, 0)', lineWidth:1 });
@@ -56,10 +56,13 @@ setInterval(async function() {
                }
             }
             if(value.current) {
-                if(value.current > 0)
-                    line3.append(n, value.current / 4);
-                else
-                    line2.append(n, -value.current / 4);
+                if(value.current > 0) {
+                    line2.append(n, 0);
+                    line3.append(n, value.current / 8);
+                } else {
+                    line2.append(n, -value.current / 8);
+                    line3.append(n, 0);
+                }
             }
             if(value.temperature) line4.append(n, (value.temperature*9/5)+32);
             line5.append(n, 100);
