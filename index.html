@@ -6,7 +6,7 @@
 
 var charts = {};
 function newchart(name) {
-    var sc=new SmoothieChart();//{responsive:true,millisPerPixel:60000,labels:{fontSize:30,precision:0},grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20},yRangeFunction:function(r){return{min:0,max:200}}});
+    var sc=new SmoothieChart({millisPerPixel:200,grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20}});//{responsive:true,millisPerPixel:60000,labels:{fontSize:30,precision:0},grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20},yRangeFunction:function(r){return{min:0,max:200}}});
     var line1 = new TimeSeries();
     var line2 = new TimeSeries();
     var line3 = new TimeSeries();
@@ -40,7 +40,6 @@ setInterval(async function() {
     n=Date.now();
     
     for (const [key, value] of Object.entries(data)) {
-        if(key != 'Meshtastic e5dc') {
             if(charts[key] == undefined) {
                 charts[key] = newchart(key);
             } else {
@@ -48,17 +47,24 @@ setInterval(async function() {
             }
             [sc, canvas, line1, line2, line3, line4, line5, line6] = charts[key];
 
-            if(value.battery) line1.append(n, value.battery);
-            if(value.voltage) line2.append(n, value.voltage);
-            if(value.current) {
-                if(value.current >0)
-                line3.append(n, value.current);
-                else
-                line4.append(n, -value.current);
+            if(value.voltage) {
+               if(value.voltage < 4.9 && value.battery) {
+                    line1.append(n, value.battery);
+               } else {
+                    pc = value.voltage / 13.0;
+                    line1.append(n, pc);
+               }
             }
-            if(value.temperature) line5.append(n, value.temperature);
+            if(value.current) {
+                if(value.current > 0)
+                    line3.append(n, value.current / 5);
+                else
+                    line2.append(n, -value.current / 5);
+            }
+            if(value.temperature) line4.append(n, (value.temperature*9/5)+32);
+            line5.append(n, 100);
+            line6.append(n, 114);
             // console.log(value);
-        }
     }
 }, 10000);
 
@@ -70,3 +76,4 @@ setInterval(async function() {
 </body>
 
 </html>
+
