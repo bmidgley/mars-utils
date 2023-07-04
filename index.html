@@ -1,0 +1,72 @@
+<html>
+
+<head>
+    <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/smoothie/1.34.0/smoothie.js'></script>
+    <script type='text/Javascript'>
+
+var charts = {};
+function newchart(name) {
+    var sc=new SmoothieChart();//{responsive:true,millisPerPixel:60000,labels:{fontSize:30,precision:0},grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20},yRangeFunction:function(r){return{min:0,max:200}}});
+    var line1 = new TimeSeries();
+    var line2 = new TimeSeries();
+    var line3 = new TimeSeries();
+    var line4 = new TimeSeries();
+    var line5 = new TimeSeries();
+    var line6 = new TimeSeries();
+    sc.addTimeSeries(line1, { strokeStyle:'rgb(0, 250, 0)', fillStyle:'rgba(0, 250, 0, 0.2)', lineWidth:3 });
+    sc.addTimeSeries(line2, { strokeStyle:'rgb(255, 0, 0)', fillStyle:'rgba(255, 0, 0, 0.5)', lineWidth:3 });
+    sc.addTimeSeries(line3, { strokeStyle:'rgb(0, 50, 50)', fillStyle:'rgba(0, 50, 50, 0.5)', lineWidth:3 });
+    sc.addTimeSeries(line4, { strokeStyle:'rgb(50, 50, 50)', fillStyle:'rgba(20, 20, 20, 0.2)', lineWidth:3 });
+    sc.addTimeSeries(line5, { strokeStyle:'rgb(0, 250, 50)', lineWidth:1 });
+    sc.addTimeSeries(line6, { strokeStyle:'rgb(250, 0, 0)', lineWidth:1 });
+
+    var canvas = document.createElement('canvas');
+    var div = document.getElementById('graphs'); 
+    var p = document.createElement('p');
+    p.innerText = name;
+    canvas.id = name;
+    canvas.width = 1224;
+    canvas.height = 400;
+    canvas.style.zIndex   = 8;
+    canvas.style.border   = "1px solid";
+    div.appendChild(p);
+    div.appendChild(canvas)
+    sc.streamTo(canvas);
+    return [sc, canvas, line1, line2, line3, line4, line5, line6];
+}
+setInterval(async function() { 
+    r=await fetch('/57f451ba-95c0-4d17-9c0f-22670042f212.json');
+    data=await r.json();
+    n=Date.now();
+    
+    for (const [key, value] of Object.entries(data)) {
+        if(key != 'Meshtastic e5dc') {
+            if(charts[key] == undefined) {
+                charts[key] = newchart(key);
+            } else {
+                // sc.streamTo(canvas);
+            }
+            [sc, canvas, line1, line2, line3, line4, line5, line6] = charts[key];
+
+            if(value.battery) line1.append(n, value.battery);
+            if(value.voltage) line2.append(n, value.voltage);
+            if(value.current) {
+                if(value.current >0)
+                line3.append(n, value.current);
+                else
+                line4.append(n, -value.current);
+            }
+            if(value.temperature) line5.append(n, value.temperature);
+            // console.log(value);
+        }
+    }
+}, 10000);
+
+    </script>
+</head>
+
+<body>
+    <div id="graphs"></div>
+</body>
+
+</html>

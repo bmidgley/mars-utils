@@ -43,12 +43,29 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
 
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        payload = bytes(json.dumps(response, indent = 4), "utf-8")
-        self.send_response(200)
-        self.send_header("Content-type", "application/json")
-        self.send_header('Content-length', len(payload))
-        self.end_headers()
-        self.wfile.write(payload)
+        print(f'path = [{self.path}]')
+        if self.path == '/57f451ba-95c0-4d17-9c0f-22670042f212.html':
+            with open('index.html', 'r') as file: payload = bytes(file.read(), 'utf-8')
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header('Content-Length', len(payload))
+            self.end_headers()
+            self.wfile.write(payload)
+        elif self.path == '/57f451ba-95c0-4d17-9c0f-22670042f212.json':
+            payload = bytes(json.dumps(response, indent = 4), "utf-8")
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.send_header('Content-length', len(payload))
+            self.end_headers()
+            self.wfile.write(payload)
+        else:
+            payload = bytes('<html><body>404</body></html>', 'utf-8')
+            self.send_response(404)
+            self.send_header("Content-type", "text/html")
+            self.send_header('Content-length', len(payload))
+            self.end_headers()
+            self.wfile.write(payload)
+
 
 def distance(p1, p2):
     tup1 = (p1["@lat"], p1["@lon"])
