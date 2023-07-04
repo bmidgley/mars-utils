@@ -72,10 +72,16 @@ def distance(p1, p2):
     tup2 = (p2["@lat"], p2["@lon"])
     return geopy.distance.geodesic(tup1, tup2).meters
 
+def add_time(station_name, seconds):
+    tm = datetime.fromtimestamp(seconds)
+    #tm = time.astimezone(pytz.utc)
+    if station_name not in response: response[station_name] = {}
+    response[station_name].update({"time": tm.isoformat()})
+
 def main(line):
     full_message = json.loads(line)
     message = full_message['payload']
-    iso = datetime.fromtimestamp(message['timestamp']).astimezone(pytz.utc).isoformat()
+    iso = datetime.fromtimestamp(message['timestamp']).isoformat()
     tst = iso[11:19]
     if message['from'] in stations:
         station_name = stations[message['from']]
@@ -88,6 +94,7 @@ def main(line):
             if 'hardware' in message['payload']: hardware_type[message['from']] = message['payload']['hardware']
             station_name = message['payload']['longname']
             print(f'{tst.ljust(15)}{station_name.ljust(16)}')
+            add_time(station_name, message['timestamp'])
         if message['type'] == 'position' and station_name:
             lat = message['payload']['latitude_i'] / 10000000
             lon = message['payload']['longitude_i']  / 10000000
@@ -102,7 +109,8 @@ def main(line):
                 if message['from'] in hardware_type: hw = hardware_type[message['from']]
                 node_type = 'infrastructure'
                 if hw == 7: node_type = 'person'
-                response[station_name].update({"position": [lat, lon], "time": iso, "distance": round(dist), 'hardware': hw, 'node_type': node_type})
+                response[station_name].update({"position": [lat, lon], "distance": round(dist), 'hardware': hw, 'node_type': node_type})
+                add_time(station_name, message['timestamp'])
         if message['type'] == 'telemetry' and station_name:
             if 'battery_level' in message['payload']:
                 battery = message['payload']['battery_level']
@@ -121,6 +129,7 @@ def main(line):
             if message['payload'].get('voltage'):
                 voltage = round(message['payload']['voltage'], 3)
                 response[station_name].update({"voltage": voltage})
+            add_time(station_name, message['timestamp'])
         if message['type'] == 'text' and station_name:
             text = message['payload']['text']
             position = []
@@ -129,6 +138,7 @@ def main(line):
             print(f'{tst.ljust(15)}{station_name.ljust(16)}{"".ljust(45)}{text}')
             if 'points' not in response[station_name]:
                 response[station_name]['points'] = {}
+            add_time(station_name, message['timestamp'])
             response[station_name]['points'].update({iso: {"text": text, "position": position}})
 
 if __name__ == "__main__":
