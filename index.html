@@ -6,7 +6,7 @@
 
 var charts = {};
 function newchart(name) {
-    var sc=new SmoothieChart({millisPerPixel:2000,grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20},yRangeFunction:function(r){return{min:0,max:150}}});//{responsive:true,millisPerPixel:60000,labels:{fontSize:30,precision:0},grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20},yRangeFunction:function(r){return{min:0,max:200}}});
+    var sc=new SmoothieChart({millisPerPixel:2000,grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20},yRangeFunction:function(r){return{min:0,max:120}}});//{responsive:true,millisPerPixel:60000,labels:{fontSize:30,precision:0},grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20},yRangeFunction:function(r){return{min:0,max:200}}});
     var line1 = new TimeSeries();
     var line2 = new TimeSeries();
     var line3 = new TimeSeries();
