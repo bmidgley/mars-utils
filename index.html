@@ -6,7 +6,7 @@
 
 var charts = {};
 function newchart(name) {
-    var sc=new SmoothieChart({millisPerPixel:200,grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20}});//{responsive:true,millisPerPixel:60000,labels:{fontSize:30,precision:0},grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20},yRangeFunction:function(r){return{min:0,max:200}}});
+    var sc=new SmoothieChart({millisPerPixel:2000,grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20},yRangeFunction:function(r){return{min:0,max:150}}});//{responsive:true,millisPerPixel:60000,labels:{fontSize:30,precision:0},grid:{fillStyle:'#000000',millisPerLine:3600000,verticalSections:20},yRangeFunction:function(r){return{min:0,max:200}}});
     var line1 = new TimeSeries();
     var line2 = new TimeSeries();
     var line3 = new TimeSeries();
@@ -57,9 +57,9 @@ setInterval(async function() {
             }
             if(value.current) {
                 if(value.current > 0)
-                    line3.append(n, value.current / 5);
+                    line3.append(n, value.current / 4);
                 else
-                    line2.append(n, -value.current / 5);
+                    line2.append(n, -value.current / 4);
             }
             if(value.temperature) line4.append(n, (value.temperature*9/5)+32);
             line5.append(n, 100);
