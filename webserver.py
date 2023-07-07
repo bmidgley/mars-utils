@@ -110,6 +110,8 @@ def main(line):
                 if hw == 7: node_type = 'person'
                 response[station_name].update({"position": [lat, lon], "distance": round(dist), 'hardware': hw, 'node_type': node_type})
                 add_time(station_name, message['timestamp'])
+            if alt:
+                response[station_name].update({"altitude": alt})
         if message['type'] == 'telemetry' and station_name:
             if 'battery_level' in message['payload']:
                 battery = message['payload']['battery_level']
