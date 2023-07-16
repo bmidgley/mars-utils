@@ -42,8 +42,6 @@ setInterval(async function() {
     for (const [key, value] of Object.entries(data)) {
             if(charts[key] == undefined) {
                 charts[key] = newchart(key);
-            } else {
-                // sc.streamTo(canvas);
             }
             [sc, canvas, line1, line2, line3, line4, line5, line6] = charts[key];
 
@@ -67,7 +65,6 @@ setInterval(async function() {
             if(value.temperature) line4.append(n, (value.temperature*9/5)+32);
             line5.append(n, 100);
             line6.append(n, 114);
-            // console.log(value);
     }
 }, 4000);
 

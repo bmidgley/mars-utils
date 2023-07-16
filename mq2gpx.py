@@ -18,6 +18,8 @@ wpoints = {}
 temps = {}
 samples = -1
 ignore_points = [{"@lat": 38.405744, "@lon": -110.792172}, {"@lat": 38.4064465, "@lon": -110.791946}]
+destination = '.'
+if len(sys.argv) > 1: destination = sys.argv[1]
 
 def write_points(station_name, points, waypoints):
     if points == []: return
@@ -40,10 +42,10 @@ def write_points(station_name, points, waypoints):
             }
         }
     }
-    with open(f'{station_name}-{points[0]["time"]}.gpx', 'w') as gpx_file:
+    with open(f'{destination}/{station_name}-{points[0]["time"]}.gpx', 'w') as gpx_file:
         gpx_file.write(xmltodict.unparse(gpx, pretty=True))
 
-    with open(f'{station_name}-{points[0]["time"]}.csv', 'w') as csv_file:
+    with open(f'{destination}/{station_name}-{points[0]["time"]}.csv', 'w') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(['Time', 'Lat', 'Lon', 'Elevation', 'Temp'])
         for point in points:
@@ -72,7 +74,7 @@ def create_runs(station_name, spoints, waypoints):
         while len(spoints) > 0 and seconds_apart(pslice[-1]['time'], spoints[0]['time']) < 60 * 45:
             pslice.append(spoints.pop(0))
 
-        if len(pslice) > 200:
+        if len(pslice) > 60:
             write_points(station_name, pslice, waypoints)
 
 def distance(p1, p2):
