@@ -12,7 +12,7 @@ import pytz
 import sys
 import json
 import geopy.distance
-import os, pwd, grp
+import os, pwd, grp, glob, tempfile
 
 ignore_points = [{"@lat": 38.405744, "@lon": -110.792172}, {"@lat": 38.4064465, "@lon": -110.791946}]
 stations = {1439117596: 'RadGateWay', -1951726776: 'Astro2-MDRS', -240061613: 'Astro1-MDRS'}
@@ -21,8 +21,9 @@ response = {}
 hab = ignore_points[1]
 hostName = "0.0.0.0"
 serverPortString = os.environ.get("SERVER_PORT") or "80"
+start_day = datetime.now().day
 
-def drop_privileges(uid_name='nobody', gid_name='nogroup'):
+def drop_privileges(uid_name='pi', gid_name='nogroup'):
     if os.getuid() != 0:
         # We're not root so, like, whatever dude
         return
@@ -43,20 +44,52 @@ def drop_privileges(uid_name='nobody', gid_name='nogroup'):
 
 class MyServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == '/57f451ba-95c0-4d17-9c0f-22670042f212.html':
+        secret = '57f451ba-95c0-4d17-9c0f-22670042f212'
+        if 'MSECRET' in os.environ: secret = os.environ['MSECRET']
+        splits = self.path.split('?')
+        if self.path == f'/{secret}.html':
             with open('index.html', 'r') as file: payload = bytes(file.read(), 'utf-8')
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header('Content-Length', len(payload))
             self.end_headers()
             self.wfile.write(payload)
-        elif self.path == '/57f451ba-95c0-4d17-9c0f-22670042f212.json':
+        elif self.path == f'/{secret}.json':
             payload = bytes(json.dumps(response, indent = 4), "utf-8")
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.send_header('Content-length', len(payload))
             self.end_headers()
             self.wfile.write(payload)
+        elif self.path == f'/{secret}/logs':
+            dates = [os.path.basename(x) for x in sorted(glob.glob(sys.argv[1] + '/*'))]
+            payload = bytes(json.dumps(dates), "utf-8")
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.send_header('Content-length', len(payload))
+            self.end_headers()
+            self.wfile.write(payload)
+        elif splits[0] == f'/{secret}.zip':
+            params = []
+            if len(splits) > 1:
+                values = splits[1].split('&')
+                for value in values:
+                    params.append(value.split('=')[1])
+            dates = [os.path.basename(x) for x in sorted(glob.glob(sys.argv[1] + '/*'))]
+            included = []
+            for date in dates:
+                if date >= params[0] and date <= params[1]: included.append(sys.argv[1] + '/' + date)
+            print(f'produce zipfile from {included}')
+            with tempfile.TemporaryDirectory() as path:
+                print(f'writing to {path}')
+                os.system(f'cat {" ".join(included)} | ./mq2gpx.py {path}')
+                os.system(f'zip -j {path}/gpx {path}/*.gpx {path}/*.csv')
+                with open(f'{path}/gpx.zip', 'rb') as file: payload = file.read() #bytes(file.read(), 'utf-8')
+                self.send_response(200)
+                self.send_header("Content-Type", "application/zip")
+                self.send_header('Content-Length', len(payload))
+                self.end_headers()
+                self.wfile.write(payload)
         else:
             payload = bytes('<html><body>404</body></html>', 'utf-8')
             self.send_response(404)
@@ -161,4 +194,6 @@ if __name__ == "__main__":
     thread.start()
 
     print(f'{"time".ljust(15)}{"name".ljust(16)}{"battery".ljust(15)}{"temperature".ljust(15)}{"humidity".ljust(15)}{"extra"}')
-    for line in sys.stdin: main(line)
+    for line in sys.stdin:
+        if datetime.now().day != start_day: exit(0)
+        main(line)
