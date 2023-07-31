@@ -1,0 +1,32 @@
+graph TD
+    A[Astronaut1] --> C[meshgateway]
+    B[Astronaut2] --> C
+    C-.-> A
+    C-.-> B
+    C ---> D[mosquitto-mqtt]
+    D-.-> C
+    D-.-> O[chat gateway]
+    O-.-> D
+    O-.-> P[chat]
+    P-.-> O
+    P-.-> R[gpxlog-bot]
+    P-.-> S[kmltour-bot] 
+    Q[analog radio] ---> P
+    D --> E[logger]
+    E --> F[2023-07-16]
+    E --> G[2023-07-17]
+    E --> H[2023-07-18]
+    E --> I[today]
+    subgraph python[python-service]
+    J[json data]
+    L[mq2gpx]
+    M[zip]
+    end
+    I --> J
+    F --> L
+    J --> K[VR comms]
+    P-.-> K
+    G --> L
+    H --> L
+    L --> M
+    M --> N[zipped gpx files]
