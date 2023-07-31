@@ -84,20 +84,25 @@ class MyServer(BaseHTTPRequestHandler):
                 print(f'writing to {path}')
                 os.system(f'cat {" ".join(included)} | ./mq2gpx.py {path}')
                 os.system(f'zip -j {path}/gpx {path}/*.gpx {path}/*.csv')
-                with open(f'{path}/gpx.zip', 'rb') as file: payload = file.read() #bytes(file.read(), 'utf-8')
+                if not os.path.exists(f'{path}/gpx.zip'):
+                    self.respond404(message='No tracks found in the date range')
+                    return
+                with open(f'{path}/gpx.zip', 'rb') as file: payload = file.read()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/zip")
                 self.send_header('Content-Length', len(payload))
                 self.end_headers()
                 self.wfile.write(payload)
         else:
-            payload = bytes('<html><body>404</body></html>', 'utf-8')
-            self.send_response(404)
-            self.send_header("Content-type", "text/html")
-            self.send_header('Content-length', len(payload))
-            self.end_headers()
-            self.wfile.write(payload)
+            self.respond404(message='404')
 
+    def respond404(self, message):
+        payload = bytes(f'<html><body>{message}</body></html>', 'utf-8')
+        self.send_response(404)
+        self.send_header("Content-type", "text/html")
+        self.send_header('Content-length', len(payload))
+        self.end_headers()
+        self.wfile.write(payload)
 
 def distance(p1, p2):
     tup1 = (p1["@lat"], p1["@lon"])
