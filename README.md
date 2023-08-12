@@ -15,6 +15,8 @@ sudo apt install -y mosquitto
 export MHOST=mqtt.hostname.x
 export MUSER=user
 export MPASS=secret
+export MSERVERUSER=pi
+sudo -E ./webserver-logger.sh
 ```
 
 # Make gpx tracks from meshtastic logs
