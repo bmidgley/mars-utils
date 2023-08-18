@@ -74,7 +74,7 @@ class MyServer(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(payload)
         elif self.path == f'/{secret}/logs':
-            dates = [os.path.basename(x) for x in sorted(glob.glob(sys.argv[1] + '/*'))]
+            dates = [os.path.basename(x) for x in sorted(glob.glob(sys.argv[1] + '/????-??-??'))]
             payload = bytes(json.dumps(dates), "utf-8")
             self.send_response(200)
             self.send_header("Content-type", "application/json")
