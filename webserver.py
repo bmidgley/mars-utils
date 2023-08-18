@@ -12,7 +12,7 @@ import pytz
 import sys
 import json
 import geopy.distance
-import os, pwd, grp, glob, tempfile
+import os, pwd, grp, glob, tempfile, re
 
 ignore_points = [{"@lat": 38.405744, "@lon": -110.792172}, {"@lat": 38.4064465, "@lon": -110.791946}]
 stations = {1439117596: 'RadGateWay', -1951726776: 'Astro2-MDRS', -240061613: 'Astro1-MDRS'}
@@ -22,6 +22,7 @@ hab = ignore_points[1]
 hostName = "0.0.0.0"
 serverPortString = os.environ.get("SERVER_PORT") or "80"
 start_day = datetime.now().day
+start_minute = datetime.now().minute
 
 def drop_privileges(uid_name='pi', gid_name='nogroup'):
     if os.getuid() != 0:
@@ -54,7 +55,18 @@ class MyServer(BaseHTTPRequestHandler):
             self.send_header('Content-Length', len(payload))
             self.end_headers()
             self.wfile.write(payload)
-        elif self.path == f'/{secret}.json':
+        elif splits[0] == f'/{secret}.json':
+            if len(splits) == 2:
+                date = splits[1].split('&')[0].split('=')[1]
+                print(f'date is {date}')
+                if not re.fullmatch("[-0-9]+", date): return
+                with open(f'{sys.argv[1]}/{date}.json', 'r') as file: payload = bytes(file.read(), 'utf-8')
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header('Content-Length', len(payload))
+                self.end_headers()
+                self.wfile.write(payload)
+                return
             payload = bytes(json.dumps(response, indent = 4), "utf-8")
             self.send_response(200)
             self.send_header("Content-type", "application/json")
@@ -182,6 +194,7 @@ def main(line):
 
 if __name__ == "__main__":
     webServer = ThreadingHTTPServer((hostName, int(serverPortString)), MyServer)
+    endstate = open(sys.argv[2] + '.json', 'w')
     drop_privileges()
     print("Server started http://%s:%s" % (hostName, serverPortString))
 
@@ -200,5 +213,9 @@ if __name__ == "__main__":
 
     print(f'{"time".ljust(15)}{"name".ljust(16)}{"battery".ljust(15)}{"temperature".ljust(15)}{"humidity".ljust(15)}{"extra"}')
     for line in sys.stdin:
-        if datetime.now().day != start_day: exit(0)
+        if datetime.now().day != start_day:
+            payload = json.dumps(response, indent = 4)
+            endstate.write(payload)
+            endstate.close()
+            exit(0)
         main(line)

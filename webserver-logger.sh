@@ -8,5 +8,5 @@ do
   logfile=$folder/$date
   mkdir -p $folder
   touch $logfile
-  ./webserver.py $folder $MSERVERUSER < <(cat $logfile; mosquitto_sub -p 1883 -h localhost -t 'msh/+/json/#' -u $MUSER -P $MPASS -F %J | tee -a $logfile)
+  ./webserver.py $folder $logfile $MSERVERUSER < <(cat $logfile; mosquitto_sub -p 1883 -h localhost -t 'msh/+/json/#' -u $MUSER -P $MPASS -F %J | tee -a $logfile)
 done
