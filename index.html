@@ -16,7 +16,7 @@ function newchart(name) {
     sc.addTimeSeries(line1, { strokeStyle:'rgb(0, 250, 0)', fillStyle:'rgba(0, 250, 0, 0.5)', lineWidth:3 });
     sc.addTimeSeries(line2, { strokeStyle:'rgb(255, 0, 0)', fillStyle:'rgba(255, 0, 0, 0.5)', lineWidth:3 });
     sc.addTimeSeries(line3, { strokeStyle:'rgb(0, 50, 150)', fillStyle:'rgba(0, 50, 150, 0.5)', lineWidth:3 });
-    sc.addTimeSeries(line4, { strokeStyle:'rgb(250, 0, 0)', fillStyle:'rgba(0, 0, 0, 0.1)', lineWidth:6 });
+    sc.addTimeSeries(line4, { strokeStyle:'rgb(250, 0, 0)', fillStyle:'rgba(0, 0, 0, 0.1)', lineWidth:3 });
     sc.addTimeSeries(line5, { strokeStyle:'rgb(0, 250, 50)', lineWidth:1 });
     sc.addTimeSeries(line6, { strokeStyle:'rgb(250, 0, 0)', lineWidth:1 });
 
@@ -79,7 +79,7 @@ setInterval(async function() {
             if(value.temperature) line4.append(n, (value.temperature*9/5)+32);
             if(value.voltage || value.battery) {
                 line5.append(n, 100);
-                line6.append(n, 114);
+                //line6.append(n, 114);
             }
     }
 }, 4000);
