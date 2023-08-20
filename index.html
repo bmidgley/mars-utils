@@ -22,15 +22,19 @@ function newchart(name) {
 
     var canvas = document.createElement('canvas');
     var div = document.getElementById('graphs'); 
-    var p = document.createElement('p');
-    p.innerText = name;
+    var tr = document.createElement('tr');
+    var td1 = document.createElement('td');
+    var td2 = document.createElement('td');
+    td1.innerText = name;
     canvas.id = name;
     canvas.width = 1224;
-    canvas.height = 400;
+    canvas.height = 80;
     canvas.style.zIndex   = 8;
     canvas.style.border   = "1px solid";
-    div.appendChild(p);
-    div.appendChild(canvas)
+    div.appendChild(tr);
+    tr.appendChild(td1);
+    tr.appendChild(td2);
+    td2.appendChild(canvas)
     sc.streamTo(canvas);
     return [sc, canvas, line1, line2, line3, line4, line5, line6];
 }
@@ -72,7 +76,9 @@ setInterval(async function() {
 </head>
 
 <body>
-    <div id="graphs"></div>
+    <div style="height:100%">
+    <table id="graphs" style="height:100%"></table>
+    </div>
 </body>
 
 </html>
