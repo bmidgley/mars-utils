@@ -42,8 +42,14 @@ setInterval(async function() {
     r=await fetch('/57f451ba-95c0-4d17-9c0f-22670042f212.json');
     data=await r.json();
     n=Date.now();
+
+    const ordered = Object.keys(data).sort().reduce(
+        (obj, key) => {
+            obj[key] = data[key];
+            return obj;
+        }, {});
     
-    for (const [key, value] of Object.entries(data)) {
+    for (const [key, value] of Object.entries(ordered)) {
             if(charts[key] == undefined) {
                 charts[key] = newchart(key);
             }
