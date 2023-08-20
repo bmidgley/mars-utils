@@ -73,8 +73,10 @@ setInterval(async function() {
                 }
             }
             if(value.temperature) line4.append(n, (value.temperature*9/5)+32);
-            line5.append(n, 100);
-            line6.append(n, 114);
+            if(value.voltage || value.battery) {
+                line5.append(n, 100);
+                line6.append(n, 114);
+            }
     }
 }, 4000);
 
