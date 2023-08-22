@@ -73,7 +73,7 @@ class MyServer(BaseHTTPRequestHandler):
                 if not re.fullmatch("[-0-9]+", date): return
                 with open(f'{sys.argv[1]}/{date}.json', 'r') as file: payload = bytes(file.read(), 'utf-8')
                 self.send_response(200)
-                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Type", "application/json")
                 self.send_header('Content-Length', len(payload))
                 self.end_headers()
                 self.wfile.write(payload)
