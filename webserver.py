@@ -24,6 +24,17 @@ serverPortString = os.environ.get("SERVER_PORT") or "80"
 start_day = datetime.now().day
 start_minute = datetime.now().minute
 
+def merge(a: dict, b: dict, path=[]):
+    for key in b:
+        if key in a:
+            if isinstance(a[key], dict) and isinstance(b[key], dict):
+                merge(a[key], b[key], path + [str(key)])
+            elif a[key] != b[key]:
+                print('Conflict at ' + '.'.join(path + [str(key)]))
+        else:
+            a[key] = b[key]
+    return a
+
 def drop_privileges(uid_name='pi', gid_name='nogroup'):
     if os.getuid() != 0:
         # We're not root so, like, whatever dude
@@ -127,6 +138,19 @@ def add_time(station_name, seconds):
     if station_name not in response: response[station_name] = {}
     response[station_name].update({"time": tm.isoformat()})
 
+def merge_previous_days(folder):
+    today = str(datetime.today().date())
+    combined = {}
+    dates = [os.path.basename(x) for x in sorted(glob.glob(folder + '/????-??-??'))]
+    for date in dates:
+        if date == today or date == '0000-00-00': continue
+        with open(f'{folder}/{date}.json', 'r') as file:
+            data = json.load(file)
+            merge(combined, data)
+    with open(f'{folder}/0000-00-00.json', 'w') as file:
+        file.write(json.dumps(combined, indent = 4))
+    return(combined)
+
 def main(line):
     full_message = json.loads(line)
     message = full_message['payload']
@@ -195,6 +219,7 @@ def main(line):
 if __name__ == "__main__":
     webServer = ThreadingHTTPServer((hostName, int(serverPortString)), MyServer)
     endstate = open(sys.argv[2] + '.json', 'w')
+    merge_previous_days(sys.argv[1])
     drop_privileges()
     print("Server started http://%s:%s" % (hostName, serverPortString))
 

@@ -42,7 +42,7 @@ setInterval(async function() {
     r=await fetch('/57f451ba-95c0-4d17-9c0f-22670042f212.json');
     data=await r.json();
     n=Date.now();
-    var onehour = 60 * 60 * 1000;
+    var unresponsive_at = 10 * 60 * 1000; // ten minutes
 
     const ordered = Object.keys(data).sort().reduce(
         (obj, key) => {
@@ -57,7 +57,7 @@ setInterval(async function() {
             [sc, canvas, line1, line2, line3, line4, line5, line6] = charts[key];
 
             var time = Date.parse(value.time);
-            if(n - time > onehour) continue;
+            if(n - time > unresponsive_at) continue;
 
             if(value.voltage) {
                if(value.voltage < 4.9 && value.battery) {
