@@ -152,7 +152,10 @@ def merge_previous_days(folder):
     return(combined)
 
 def main(line):
-    full_message = json.loads(line)
+    try:
+        full_message = json.loads(line)
+    except:
+        return
     message = full_message['payload']
     iso = datetime.fromtimestamp(message['timestamp']).isoformat()
     tst = iso[11:19]
