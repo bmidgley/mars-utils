@@ -171,7 +171,7 @@ def main(line):
             station_name = message['payload']['longname']
             print(f'{tst.ljust(15)}{station_name.ljust(16)}')
             add_time(station_name, message['timestamp'])
-        if message['type'] == 'position' and station_name:
+        elif message['type'] == 'position' and station_name:
             lat = message['payload']['latitude_i'] / 10000000
             lon = message['payload']['longitude_i']  / 10000000
             if 'altitude' in message['payload']:
@@ -189,7 +189,7 @@ def main(line):
                 add_time(station_name, message['timestamp'])
             if alt:
                 response[station_name].update({"altitude": alt})
-        if message['type'] == 'telemetry' and station_name:
+        elif message['type'] == 'telemetry' and station_name:
             if 'battery_level' in message['payload']:
                 battery = message['payload']['battery_level']
                 print(f'{tst.ljust(15)}{station_name.ljust(16)}{battery}%')
@@ -208,7 +208,7 @@ def main(line):
                 voltage = round(message['payload']['voltage'], 3)
                 response[station_name].update({"voltage": voltage})
             add_time(station_name, message['timestamp'])
-        if message['type'] == 'text' and station_name:
+        elif message['type'] == 'text' and station_name:
             text = message['payload']['text']
             position = []
             if "position" in response[station_name]:
@@ -218,6 +218,8 @@ def main(line):
                 response[station_name]['points'] = {}
             add_time(station_name, message['timestamp'])
             response[station_name]['points'].update({iso: {"text": text, "position": position}})
+        else:
+            print(message)
 
 if __name__ == "__main__":
     webServer = ThreadingHTTPServer((hostName, int(serverPortString)), MyServer)
