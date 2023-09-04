@@ -145,8 +145,11 @@ def merge_previous_days(folder):
     for date in dates:
         if date == today or date == '0000-00-00': continue
         with open(f'{folder}/{date}.json', 'r') as file:
-            data = json.load(file)
-            merge(combined, data)
+            try:
+                data = json.load(file)
+                merge(combined, data)
+            except:
+                print(f'skipping {date}')
     with open(f'{folder}/0000-00-00.json', 'w') as file:
         file.write(json.dumps(combined, indent = 4))
     return(combined)
