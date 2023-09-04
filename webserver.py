@@ -220,7 +220,12 @@ def main(line):
             if 'points' not in response[station_name]:
                 response[station_name]['points'] = {}
             add_time(station_name, message['timestamp'])
-            response[station_name]['points'].update({iso: {"text": text, "position": position}})
+            neighbors = response[station_name]['neighbors'] if ('neighbors' in response[station_name]) else []
+            response[station_name]['points'].update({iso: {"text": text, "position": position, "neighbors": neighbors}})
+        elif message['type'] == 'neighborinfo' and station_name:
+            response[station_name]['neighbors'] = message['payload']['neighbors']
+            for remote in response[station_name]['neighbors']:
+                remote['name'] = stations[remote['node_id']] if remote['node_id'] in stations else 'unknown'
         else:
             print(message)
 
