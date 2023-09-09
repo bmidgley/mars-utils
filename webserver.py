@@ -158,8 +158,8 @@ def main(line):
         full_message = json.loads(line)
         message = full_message['payload']
         iso = datetime.fromtimestamp(message['timestamp']).isoformat()
-    except:
-        print(f"skip {line}")
+    except Exception as exc:
+        print(f"{exc} on {line}")
         return
     tst = iso[11:19]
     if message['from'] in stations:
