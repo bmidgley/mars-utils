@@ -69,7 +69,6 @@ class MyServer(BaseHTTPRequestHandler):
         elif splits[0] == f'/{secret}.json':
             if len(splits) == 2:
                 date = splits[1].split('&')[0].split('=')[1]
-                print(f'date is {date}')
                 if not re.fullmatch("[-0-9]+", date): return
                 with open(f'{sys.argv[1]}/{date}.json', 'r') as file: payload = bytes(file.read(), 'utf-8')
                 self.send_response(200)
@@ -157,10 +156,11 @@ def merge_previous_days(folder):
 def main(line):
     try:
         full_message = json.loads(line)
+        message = full_message['payload']
+        iso = datetime.fromtimestamp(message['timestamp']).isoformat()
     except:
+        print(f"skip {line}")
         return
-    message = full_message['payload']
-    iso = datetime.fromtimestamp(message['timestamp']).isoformat()
     tst = iso[11:19]
     if message['from'] in stations:
         station_name = stations[message['from']]
