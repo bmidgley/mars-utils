@@ -30,7 +30,7 @@ def merge(a: dict, b: dict, path=[]):
             if isinstance(a[key], dict) and isinstance(b[key], dict):
                 merge(a[key], b[key], path + [str(key)])
             elif a[key] != b[key]:
-                print('Conflict at ' + '.'.join(path + [str(key)]))
+                a[key] = b[key]
         else:
             a[key] = b[key]
     return a
