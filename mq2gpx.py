@@ -80,7 +80,10 @@ def create_runs(station_name, spoints, waypoints):
 def distance(p1, p2):
     tup1 = (p1["@lat"], p1["@lon"])
     tup2 = (p2["@lat"], p2["@lon"])
-    return geopy.distance.geodesic(tup1, tup2).meters
+    try:
+        return geopy.distance.geodesic(tup1, tup2).meters
+    except:
+        return 0
 
 def ignore_point(point):
     for ignore_point in ignore_points:

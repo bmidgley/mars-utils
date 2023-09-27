@@ -97,7 +97,7 @@ class MyServer(BaseHTTPRequestHandler):
                 values = splits[1].split('&')
                 for value in values:
                     params.append(value.split('=')[1])
-            dates = [os.path.basename(x) for x in sorted(glob.glob(sys.argv[1] + '/*'))]
+            dates = [os.path.basename(x) for x in sorted(glob.glob(sys.argv[1] + '/????-??-??'))]
             included = []
             for date in dates:
                 if date >= params[0] and date <= params[1]: included.append(sys.argv[1] + '/' + date)
