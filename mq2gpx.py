@@ -98,7 +98,7 @@ for line in sys.stdin:
             stations[message['from']] = message['payload']['longname']
         elif message['type'] == 'telemetry' and message['from'] in stations:
             station_name = stations[message['from']]
-            if 'temperature' in message['payload']:
+            if 'temperature' in message['payload'] and message['payload']['temperature']:
                 temperature = round(message['payload']['temperature'])
                 temps[station_name] = temperature
         elif message['type'] == 'text' and message['from'] in stations:
