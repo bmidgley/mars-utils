@@ -21,6 +21,7 @@ response = {}
 hab = ignore_points[1]
 hostName = "0.0.0.0"
 serverPortString = os.environ.get("SERVER_PORT") or "80"
+new_uid_name = os.environ.get("MUID_NAME") or "pi"
 start_day = datetime.now().day
 start_minute = datetime.now().minute
 
@@ -236,7 +237,7 @@ if __name__ == "__main__":
     webServer = ThreadingHTTPServer((hostName, int(serverPortString)), MyServer)
     endstate = open(sys.argv[2] + '.json', 'w')
     merge_previous_days(sys.argv[1])
-    drop_privileges()
+    drop_privileges(uid_name=new_uid_name)
     print("Server started http://%s:%s" % (hostName, serverPortString))
 
     def service():
