@@ -6,7 +6,6 @@ from array import array
 import datetime
 import sys
 from pydub import AudioSegment
-import io
 
 FORMAT=pyaudio.paInt16
 CHANNELS=1
@@ -15,17 +14,10 @@ CHUNK=1024
 RECORD_SECONDS=15
 
 def save_audio(frames):
-    filename = f'/home/pi/audio/{datetime.datetime.now().isoformat()}.wav'
-    wavfile = wave.open(filename, 'wb')
-    wavfile.setnchannels(CHANNELS)
-    wavfile.setsampwidth(audio.get_sample_size(FORMAT))
-    wavfile.setframerate(RATE)
-    wavfile.writeframes(b''.join(frames))
-    wavfile.close()
-    print(f'wrote {filename} with {len(frames)} frames')
-    segment = AudioSegment.from_wav(filename)
-    segment.set_sample_width(2)
-    segment.export(f'{filename}.mp3', format="mp3")
+    filename = f'/home/pi/audio/{datetime.datetime.now().isoformat()}.mp3'
+    segment = AudioSegment(b''.join(frames), sample_width=2, frame_rate=48000, channels=1)
+    segment.export(filename, format="mp3")
+    print(f"encoded {filename}")
 
 audio=pyaudio.PyAudio()
 
