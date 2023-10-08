@@ -13,7 +13,7 @@ CHUNK=1024
 RECORD_SECONDS=15
 
 def save_audio(frames):
-    filename = f'{datetime.datetime.now().isoformat()}-{sys.argv[1]}.wav'
+    filename = f'/home/pi/audio/{datetime.datetime.now().isoformat()}.wav'
     wavfile = wave.open(filename, 'wb')
     wavfile.setnchannels(CHANNELS)
     wavfile.setsampwidth(audio.get_sample_size(FORMAT))
@@ -26,16 +26,24 @@ audio=pyaudio.PyAudio()
 
 info = audio.get_host_api_info_by_index(0)
 numdevices = info.get('deviceCount')
+input_index = -1
 
 for i in range(0, numdevices):
-    if (audio.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+    if (audio.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) == 1:
+        input_index = i
         print("Input Device id ", i, " - ", audio.get_device_info_by_host_api_device_index(0, i))
+
+if input_index == -1:
+    print("no audio found")
+    exit(1)
 
 stream=audio.open(format=FORMAT,channels=CHANNELS,
                   rate=RATE,
                   input=True,
                   frames_per_buffer=CHUNK,
-                  input_device_index=1)
+                  input_device_index=input_index)
+
+threshold = int(sys.argv[1]) if len(sys.argv) == 2 else 1000
 
 while True:
     frames = []
@@ -46,7 +54,7 @@ while True:
             data = stream.read(CHUNK, exception_on_overflow = False)
             data_chunk = array('h', data)
             vol = max(data_chunk)
-            if vol > int(sys.argv[1]) or heard:
+            if vol > threshold or heard:
                 if not heard: print("heard")
                 heard = True
                 frames.append(data)
