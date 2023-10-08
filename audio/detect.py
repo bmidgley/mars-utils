@@ -5,6 +5,8 @@ import wave
 from array import array
 import datetime
 import sys
+from pydub import AudioSegment
+import io
 
 FORMAT=pyaudio.paInt16
 CHANNELS=1
@@ -21,6 +23,9 @@ def save_audio(frames):
     wavfile.writeframes(b''.join(frames))
     wavfile.close()
     print(f'wrote {filename} with {len(frames)} frames')
+    segment = AudioSegment.from_wav(filename)
+    segment.set_sample_width(2)
+    segment.export(f'{filename}.mp3', format="mp3")
 
 audio=pyaudio.PyAudio()
 
