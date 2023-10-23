@@ -141,6 +141,9 @@ for line in sys.stdin:
                         del points[station_name][-2]
 
 for station_name in points:
+    # skips injected tracks
+    if station_name[0] == '@': continue
+
     spoints = points[station_name]
     waypoints = []
     if station_name in wpoints:
