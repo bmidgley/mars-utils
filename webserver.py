@@ -185,6 +185,14 @@ def main(line):
                 alt = message['payload']['altitude']
             else:
                 alt = None
+            if 'ground_speed' in message['payload']:
+                ground_speed = message['payload']['ground_speed']
+            else:
+                ground_speed = None
+            if 'ground_track' in message['payload']:
+                ground_track = message['payload']['ground_track'] / 100000
+            else:
+                ground_track = None
             dist = distance(hab, {"@lat": lat, "@lon": lon})
             print(f'{tst.ljust(15)}{station_name.ljust(16)}{"".ljust(45)}{int(dist)} http://maps.google.com/maps?z=12&t=k&q=loc:{lat}+{lon}')
             if lat != 0 and lon != 0:
@@ -196,6 +204,10 @@ def main(line):
                 add_time(station_name, message['timestamp'])
             if alt:
                 response[station_name].update({"altitude": alt})
+            if ground_speed:
+                response[station_name].update({"ground_speed": ground_speed})
+            if ground_track:
+                response[station_name].update({"ground_track": ground_track})
         elif message['type'] == 'telemetry' and station_name:
             if 'battery_level' in message['payload']:
                 battery = message['payload']['battery_level']
