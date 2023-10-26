@@ -30,13 +30,14 @@ def inject_file(filename):
     adjustment = datetime.now(pytz.utc) - start_time
 
     for point in points:
-        nodeinfo = {'from': '1', 'type': 'nodeinfo', 'payload': {'longname': name, 'hardware': 7}}
-        position = {'from': '1', 'type': 'position', 'payload': {'hardware': 7,
+        timestamp = parser.parse(point['time']) + adjustment
+        seconds = int(timestamp.timestamp())
+        nodeinfo = {'from': '1', 'type': 'nodeinfo', 'timestamp': seconds, 'payload': {'longname': name, 'hardware': 7}}
+        position = {'from': '1', 'type': 'position', 'timestamp': seconds, 'payload': {'hardware': 7,
             'latitude_i': int(float(point['@lat'])*10000000),
             'longitude_i': int(float(point['@lon'])*10000000),
             'elevation': int(float(point['ele']))}
         }
-        timestamp = parser.parse(point['time']) + adjustment
         while(timestamp > datetime.now(pytz.utc)): time.sleep(1)
         for message in [nodeinfo, position]:
             os.system(f'{send_cmd} -m {json.dumps(json.dumps(message))}')

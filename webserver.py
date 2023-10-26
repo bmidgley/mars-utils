@@ -2,6 +2,7 @@
 
 # reads from stdin a log from or output piped from:
 # mosquitto_sub -p 8883 -h $MHOST -t 'msh/+/json/#' -u $MUSER -P $MPASS --tls-use-os-certs -F %J
+# -or- mosquitto_sub -h $MHOST -t 'msh/+/json/#' -u $MUSER -P $MPASS -F %J
 # http://evalink01.westus3.cloudapp.azure.com/ce45fa11-fc6e-47b7-a7fb-ac3b3979b2b7.json
 # http://evalink01.westus3.cloudapp.azure.com/57f451ba-95c0-4d17-9c0f-22670042f212.json
 
