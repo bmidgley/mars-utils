@@ -11,6 +11,7 @@ import time
 import json
 import os
 import sys
+import random
 from datetime import datetime
 from dateutil import parser
 
@@ -22,7 +23,8 @@ def inject_file(filename):
     waypoints = data['gpx']['wpt']
 
     trk = data['gpx']['trk']
-    name = f'@{trk["name"]}'
+    code = random.randint(10, 30)
+    name = f'@{code}-{trk["name"]}'
 
     points = trk['trkseg']['trkpt']
 
@@ -40,6 +42,7 @@ def inject_file(filename):
         }
         while(timestamp > datetime.now(pytz.utc)): time.sleep(1)
         for message in [nodeinfo, position]:
+            print(message)
             os.system(f'{send_cmd} -m {json.dumps(json.dumps(message))}')
 
 if __name__ == "__main__":
