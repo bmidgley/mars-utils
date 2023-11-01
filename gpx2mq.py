@@ -19,8 +19,8 @@ def inject_file(filename):
     with open(filename, 'r') as gpx_file:
         data = xmltodict.parse(gpx_file.read())
 
-    # todo: send waypoints to bus
-    waypoints = data['gpx']['wpt']
+    # todo: send waypoints to bus, also make sure waypoints are present first
+    #waypoints = data['gpx']['wpt']
 
     trk = data['gpx']['trk']
     code = random.randint(10, 30)
