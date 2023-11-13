@@ -13,12 +13,13 @@ import pytz
 import sys
 import json
 import geopy.distance
-import os, pwd, grp, glob, tempfile, re
+import os, pwd, grp, glob, tempfile, re, uuid
 
 ignore_points = [{"@lat": 38.405744, "@lon": -110.792172}, {"@lat": 38.4064465, "@lon": -110.791946}]
 stations = {1439117596: 'RadGateWay', -1951726776: 'Astro2-MDRS', -240061613: 'Astro1-MDRS'}
 hardware_type = {}
 response = {}
+geo_json = {'type': 'FeatureCollection', 'features': []}
 hab = ignore_points[1]
 hostName = "0.0.0.0"
 serverPortString = os.environ.get("SERVER_PORT") or "80"
@@ -66,6 +67,14 @@ class MyServer(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header('Content-Length', len(payload))
+            self.end_headers()
+            self.wfile.write(payload)
+        elif splits[0] == f'/{secret}/features.json':
+            payload = bytes(json.dumps(geo_json, indent = 4), "utf-8")
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.send_header('Content-length', len(payload))
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(payload)
         elif splits[0] == f'/{secret}.json':
@@ -180,18 +189,22 @@ def main(line):
             print(f'{tst.ljust(15)}{station_name.ljust(16)}')
             add_time(station_name, message['timestamp'])
         elif message['type'] == 'position' and station_name:
+            properties = {'name': station_name, 'label': station_name}
             lat = message['payload']['latitude_i'] / 10000000
             lon = message['payload']['longitude_i']  / 10000000
             if 'altitude' in message['payload']:
                 alt = message['payload']['altitude']
+                properties['altitude'] = alt
             else:
                 alt = None
             if 'ground_speed' in message['payload']:
                 ground_speed = message['payload']['ground_speed']
+                properties['ground_speed'] = ground_speed
             else:
                 ground_speed = None
             if 'ground_track' in message['payload']:
                 ground_track = message['payload']['ground_track'] / 100000
+                properties['ground_track'] = ground_track
             else:
                 ground_track = None
             dist = distance(hab, {"@lat": lat, "@lon": lon})
@@ -203,6 +216,15 @@ def main(line):
                 if hw == 7: node_type = 'person'
                 response[station_name].update({"position": [lat, lon], "distance": round(dist), 'hardware': hw, 'node_type': node_type})
                 add_time(station_name, message['timestamp'])
+                geo = {'type': 'Feature', 'properties': properties, 'geometry': {'type': 'Point', 'coordinates': [lon, lat]}}
+                if 'index' in response[station_name]:
+                    index = response[station_name]['index']
+                    geo['id'] = geo_json['features'][index]['id']
+                    geo_json['features'][index] = geo
+                else:
+                    response[station_name]['index'] = len(geo_json['features'])
+                    geo['id'] = str(uuid.uuid4())
+                    geo_json['features'].append(geo)
             if alt:
                 response[station_name].update({"altitude": alt})
             if ground_speed:
