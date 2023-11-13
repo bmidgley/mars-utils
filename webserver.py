@@ -216,7 +216,7 @@ def main(line):
                 if hw == 7: node_type = 'person'
                 response[station_name].update({"position": [lat, lon], "distance": round(dist), 'hardware': hw, 'node_type': node_type})
                 add_time(station_name, message['timestamp'])
-                for measure in ['battery', 'temperature', 'relative_humidity', 'voltage', 'current', 'time']:
+                for measure in ['battery', 'temperature', 'relative_humidity', 'voltage', 'current', 'time', 'hardware', 'node_type']:
                     if measure in response[station_name]: properties[measure] = response[station_name][measure]
                 geo = {'type': 'Feature', 'properties': properties, 'geometry': {'type': 'Point', 'coordinates': [lon, lat]}}
                 if 'index' in response[station_name]:
