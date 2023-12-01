@@ -126,6 +126,13 @@ class MyServer(BaseHTTPRequestHandler):
                 self.send_header('Content-Length', len(payload))
                 self.end_headers()
                 self.wfile.write(payload)
+        elif self.path == f'/{secret}/' or self.path == f'/{secret}/index.html':
+            with open('map.html', 'r') as file: payload = bytes(file.read(), 'utf-8')
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header('Content-Length', len(payload))
+            self.end_headers()
+            self.wfile.write(payload)
         else:
             self.respond404(message='404')
 

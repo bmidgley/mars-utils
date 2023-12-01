@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenLayers GeoJSON Web Map</title>
+    <!-- Use OpenLayers CSS from the CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.1.0/ol.css" type="text/css">
+    <style>
+        #map {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+
+        .popup {
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            background-color: white;
+        }
+
+        #panel {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        #time-slider {
+            width: 100%;
+        }
+
+        #selected-time {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"><a href="https://www.maptiler.com" style="position:absolute;left:10px;bottom:10px;z-index:999;"><img
+                src="https://api.maptiler.com/resources/logo.svg" alt="MapTiler logo"></a></div>
+
+    <div id="panel">
+        <h3>Feature List</h3>
+        <ul id="feature-list" class="feature-list"></ul>
+        <label for="time-slider">Time Slider:</label>
+        <input type="range" id="time-slider" min="0" max="100" value="0" step="1">
+        <p id="selected-time">Selected Time: <span></span></p>
+    </div>
+
+    <!-- Include OpenLayers JS from a CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/ol@7.1.0/dist/ol.js"></script>
+    <script>
+        // URL for the GeoJSON data
+        let geoJsonUrl = 'features.json';
+
+        const key = 'VfcvzosbIEMkLMsjWMpz';
+
+        const attribution = new ol.control.Attribution({
+            collapsible: false,
+        });
+
+        const source = new ol.source.TileJSON({
+            url: `https://api.maptiler.com/maps/topo/tiles.json?key=${key}`, // source URL
+            tileSize: 512,
+            crossOrigin: 'anonymous',
+        });
+
+        // Create a new OpenLayers map
+        const map = new ol.Map({
+            target: 'map',
+            controls: ol.control.defaults.defaults({ attribution: false }).extend([attribution]),
+            layers: [
+                // Add a tile layer (you can replace this with your desired base map)
+                new ol.layer.Tile({
+                    source: source,
+                }),
+                // Add a vector layer to load GeoJSON data
+                new ol.layer.Vector({
+                    source: new ol.source.Vector({
+                        url: geoJsonUrl,
+                        format: new ol.format.GeoJSON(),
+                    }),
+                    style: new ol.style.Style({
+                        image: new ol.style.Icon({
+                            // src: 'https://docs.maptiler.com/openlayers/geojson-points/icon-plane-512.png',
+                            src: 'location_icon.svg.png',
+                            size: [512, 512],
+                            scale: 0.03
+                        })
+                    }),
+                }),
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([-110.7919148, 38.4065268]), // Set the center to the provided coordinates
+                zoom: 13, // Set the zoom level to 13
+            }),
+
+
+        });
+
+        // Create an overlay to show the popup
+        const overlay = new ol.Overlay({
+            element: document.createElement('div'),
+            positioning: 'bottom-center',
+            stopEvent: false,
+            offset: [0, -10],
+        });
+        map.addOverlay(overlay);
+
+        // Function to show the popup on marker click
+        map.on('click', function (event) {
+            const feature = map.forEachFeatureAtPixel(event.pixel, function (feature) {
+                return feature;
+            });
+
+            if (feature) {
+                const coordinates = feature.getGeometry().getCoordinates();
+                // const properties = feature.getProperties().properties;
+                console.log(feature.values_.name);
+
+                const content = `<div class="popup">
+                                    <p>Name: ${feature.values_.name}</p>
+                                    <p>Label: ${feature.values_.label}</p>
+                                    <p>Time: ${feature.values_.time}</p>
+                                    <p>Hardware: ${feature.values_.hardware}</p>
+                                    <p>Node Type: ${feature.values_.node_type}</p>
+                                </div>`;
+
+                overlay.getElement().innerHTML = content;
+                overlay.setPosition(coordinates);
+            } else {
+                overlay.setPosition(undefined);
+            }
+        });
+
+        // Change mouse cursor when over marker
+        map.on('pointermove', function (e) {
+            if (e.dragging) {
+                overlay.setPosition(undefined);
+                return;
+            }
+            const pixel = map.getEventPixel(e.originalEvent);
+            const hit = map.hasFeatureAtPixel(pixel);
+            map.getTargetElement().style.cursor = hit ? 'pointer' : '';
+        });
+
+        function updateFeatureList(features) {
+            const featureList = document.getElementById('feature-list');
+            featureList.innerHTML = '';
+
+            features.forEach(feature => {
+                const listItem = document.createElement('li');
+                const anchorElement = document.createElement('a');
+                anchorElement.href = '#';
+                anchorElement.textContent = feature.values_.name;
+                anchorElement.addEventListener('click', function () {
+                    const coordinates = feature.getGeometry().getCoordinates();
+                    map.getView().setCenter(coordinates);
+                    map.getView().setZoom(17); 
+                });
+
+                listItem.appendChild(anchorElement);
+                featureList.appendChild(listItem);
+            });
+        }
+
+        // Function to update the selected time text
+        function updateSelectedTime(time) {
+            document.getElementById('selected-time').getElementsByTagName('span')[0].textContent = time;
+        }
+
+
+        // Event listener for time slider changes
+        document.getElementById('time-slider').addEventListener('input', function (event) {
+            const sliderValue = event.target.value;
+            const totalFeatures = map.getLayers().getArray()[1].getSource().getFeatures().length;
+            const selectedFeatureIndex = Math.floor((sliderValue / 100) * totalFeatures);
+            const selectedFeature = map.getLayers().getArray()[1].getSource().getFeatures()[selectedFeatureIndex];
+            const selectedTime = selectedFeature.values_.time;
+
+            updateSelectedTime(selectedTime);
+        });
+
+        // Refresh the GeoJSON data every 9 seconds
+        setInterval(function () {
+            map.getLayers().forEach(function (layer) {
+                console.log("updating....");
+                if (layer.getSource() instanceof ol.source.Vector) {
+                    layer.getSource().clear();
+                    fetch(geoJsonUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Add features to the vector layer
+                            const features = new ol.format.GeoJSON().readFeatures(data, {
+                                dataProjection: 'EPSG:4326',
+                                featureProjection: 'EPSG:3857'
+                            });
+                            layer.getSource().addFeatures(features);
+                            updateFeatureList(features);
+                            updateSelectedTime(features[0].values_.time);
+                        })
+                        .catch(error => {
+                            console.error('Error fetching GeoJSON data:', error);
+                        });
+                }
+            });
+        }, 9000);
+
+    </script>
+</body>
+
+</html>
