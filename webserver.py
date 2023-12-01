@@ -133,6 +133,13 @@ class MyServer(BaseHTTPRequestHandler):
             self.send_header('Content-Length', len(payload))
             self.end_headers()
             self.wfile.write(payload)
+        elif self.path == f'/{secret}/location_icon.svg.png':
+            with open('location_icon.svg.png', 'rb') as file: payload = file.read()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header('Content-Length', len(payload))
+            self.end_headers()
+            self.wfile.write(payload)
         else:
             self.respond404(message='404')
 
