@@ -135,10 +135,13 @@
                 // const properties = feature.getProperties().properties;
                 console.log(feature.values_.name);
 
+                dateTime = new Date(feature.values_.time);
+                formattedDate = dateTime.toLocaleString('en-us', { year:"numeric", month:"numeric", day:"numeric", hour: "numeric", minute: "numeric"})
+
                 const content = `<div class="popup">
                                     <p>Name: ${feature.values_.name}</p>
                                     <p>Label: ${feature.values_.label}</p>
-                                    <p>Time: ${feature.values_.time}</p>
+                                    <p>Time: ${formattedDate}</p>
                                     <p>Hardware: ${feature.values_.hardware}</p>
                                     <p>Node Type: ${feature.values_.node_type}</p>
                                 </div>`;
