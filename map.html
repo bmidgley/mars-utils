@@ -5,8 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenLayers GeoJSON Web Map</title>
-    <!-- Use OpenLayers CSS from the CDN -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <!-- Include OpenLayers library -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.1.0/ol.css" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/ol@7.1.0/dist/ol.js"></script>
     <style>
         #map {
             position: absolute;
@@ -21,55 +23,127 @@
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             background-color: white;
+            font-family: 'Roboto', sans-serif;
         }
 
-        #panel {
+        #marker-list {
             position: absolute;
-            bottom: 10px;
+            top: 10px;
             right: 10px;
             background-color: white;
             padding: 15px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
             z-index: 1000;
+            font-family: 'Roboto', sans-serif;
         }
 
-        .feature-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 150px;
+        .marker-item {
+            margin-bottom: 5px;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        #time-slider-container {
+            position: absolute;
+            bottom: 60px;
+            right: 10px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+
+        #emergency-device-panel {
+            position: fixed;
+            bottom: 40px;
+            left: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-height: 200px;
             overflow-y: auto;
         }
 
-        #time-slider {
-            width: 100%;
+        #emergency-device-panel h3 {
+            margin-top: 0;
+            font-size: 16px;
+            color: #333;
+            font-family: 'Roboto', sans-serif;
         }
 
-        #selected-time {
-            margin-top: 10px;
+        #emergency-device-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #emergency-device-list li {
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+            font-family: 'Roboto', sans-serif;
+            animation: blink 1.5s infinite;
+            cursor: pointer;
+        }
+
+        #emergency-device-list li a {
+            text-decoration: none;
+        }
+
+        @keyframes blink {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
         }
     </style>
 </head>
 
 <body>
-    <div id="map"><a href="https://www.maptiler.com" style="position:absolute;left:10px;bottom:10px;z-index:999;"><img
-                src="https://api.maptiler.com/resources/logo.svg" alt="MapTiler logo"></a></div>
-
-    <div id="panel">
-        <h3>Feature List</h3>
-        <ul id="feature-list" class="feature-list"></ul>
-        <label for="time-slider">Time Slider:</label>
-        <input type="range" id="time-slider" min="0" max="100" value="0" step="1">
-        <p id="selected-time">Selected Time: <span></span></p>
+    <div id="map">
+        <a href="https://www.maptiler.com" style="position:absolute;left:10px;bottom:10px;z-index:999;"><img
+                src="https://api.maptiler.com/resources/logo.svg" alt="MapTiler logo"></a>
     </div>
 
-    <!-- Include OpenLayers JS from a CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/ol@7.1.0/dist/ol.js"></script>
-    <script>
-        // URL for the GeoJSON data
-        let geoJsonUrl = 'features.json';
+    <div id="marker-list"></div>
 
+
+    <div id="time-slider-container">
+        <h3 id="nameTimeSlider"></h3>
+        <input type="text" id="tag-input" placeholder="Add tags...">
+        <input type="button" value="Add Tag" onclick="addTag()">
+        <br>
+        <input type="range" id="time-slider" min="0" max="1" step="0.1" value="0">
+        <div id="selected-time"></div>
+        <button id="emergency-button" title="Emergency Signal" onclick="sendEmergencySignal()">
+            <img id="emergency-icon" src="https://img.icons8.com/ios-filled/50/000000/siren.png" height="30"
+                width="30" />
+        </button>
+        <button id="download-button" title="Download JSON For Selected Only">
+            <img src="https://img.icons8.com/material-outlined/24/000000/download.png" height="30" width="30" />
+        </button>
+    </div>
+
+    <div id="emergency-device-panel" class="hidden">
+        <h3>Emergency Device List</h3>
+        <ul id="emergency-device-list"></ul>
+    </div>
+
+    <script>
+        const geojsonUrl =
+            'http://evalink01.westus3.cloudapp.azure.com/57f451ba-95c0-4d17-9c0f-22670042f212/features.json';
         const key = 'VfcvzosbIEMkLMsjWMpz';
 
         const attribution = new ol.control.Attribution({
@@ -82,40 +156,203 @@
             crossOrigin: 'anonymous',
         });
 
-        // Create a new OpenLayers map
+        let markerData = {};
+        let timeSliderVisible = false;
+
+        function updateGeoJSON() {
+            fetch(geojsonUrl)
+                .then(response => response.json())
+                .then(data => {
+                    vectorSource.clear();
+
+                    const features = vectorSource.getFormat().readFeatures(data, {
+                        featureProjection: map.getView().getProjection(),
+                    });
+                    vectorSource.addFeatures(features);
+
+                    // markerData = {};
+
+                    features.forEach(feature => {
+                        const name = feature.get('name');
+                        const time = feature.get('time');
+                        const coordinates = feature.getGeometry().getCoordinates();
+
+                        if (name && time) {
+                            if (!markerData[name]) {
+                                markerData[name] = {
+                                    times: [],
+                                    coordinates: [],
+                                };
+                            }
+
+                            // Check if the time is not already present, then add it
+                            if (!markerData[name].times.includes(time)) {
+                                markerData[name].times.push(time);
+                                markerData[name].coordinates.push(coordinates);
+                            }
+                        }
+                    });
+
+                    updateMarkerList();
+                    if (timeSliderVisible) {
+                        updateSlider();
+                    }
+                })
+                .catch(error => console.error('Error loading GeoJSON:', error));
+        }
+
+        function updateMarkerList() {
+            const markerList = document.getElementById('marker-list');
+            markerList.innerHTML = '';
+
+            Object.keys(markerData).forEach(name => {
+                const markerItem = document.createElement('div');
+                markerItem.className = 'marker-item';
+                markerItem.textContent = name;
+                markerItem.addEventListener('click', function () {
+                    zoomToMarker(name);
+                    showTimeSlider(name);
+                });
+                markerList.appendChild(markerItem);
+            });
+            const downloadJsonButton = document.createElement('button');
+            downloadJsonButton.id = 'download-json-button';
+            downloadJsonButton.title = 'Download All JSON Data';
+            downloadJsonButton.innerHTML = '<img src="https://img.icons8.com/material-outlined/24/000000/download.png"/>';
+            downloadJsonButton.addEventListener('click', function () {
+                downloadAllData();
+            });
+
+            markerList.appendChild(downloadJsonButton);
+        }
+
+        // function zoomToMarker(name) {
+        //     const feature = vectorSource.getFeatures().find(feature => feature.get('name') === name);
+        //     if (feature) {
+        //         const coordinates = feature.getGeometry().getCoordinates();
+        //         map.getView().animate({
+        //             center: coordinates,
+        //             zoom: 19,
+        //             duration: 1000,
+        //         });
+        //     }
+        // }
+
+        function showTimeSlider(name) {
+            const times = markerData[name].times;
+            const coordinates = markerData[name].coordinates;
+            const timeSliderContainer = document.getElementById('time-slider-container');
+            const timeSlider = document.getElementById('time-slider');
+            const selectedTime = document.getElementById('selected-time');
+            document.getElementById('nameTimeSlider').innerHTML = name;
+
+            const emergencyIcon = document.getElementById('emergency-icon');
+            if (emergencyList.includes(name)) {
+                emergencyIcon.src = 'https://img.icons8.com/ios-filled/50/FF0000/siren.png';
+            } else {
+                emergencyIcon.src = 'https://img.icons8.com/ios-filled/50/000000/siren.png';
+            }
+
+            // Enable or disable the slider based on the length of times array
+            timeSlider.disabled = times.length <= 1;
+
+            timeSlider.setAttribute('max', times.length - 1);
+            timeSlider.value = 0;
+
+            timeSlider.oninput = function () {
+                const index = parseInt(timeSlider.value, 10);
+                const selected = times[index];
+                selectedTime.textContent = `Time: ${selected}`;
+
+                // Move the marker to the selected coordinates
+                moveMarkerToCoordinates(coordinates[index]);
+            };
+
+            timeSlider.onchange = function () {
+                const index = parseInt(timeSlider.value, 10);
+                const selected = times[index];
+                selectedTime.textContent = `Time: ${selected}`;
+
+                // Draw a temporary marker at the selected coordinates
+                drawTemporaryMarker(coordinates[index]);
+            };
+
+            const index = parseInt(timeSlider.value, 10);
+            const selected = times[index];
+            selectedTime.textContent = `Time: ${selected}`;
+
+            timeSliderContainer.style.display = 'block';
+        }
+
+        function drawTemporaryMarker(coordinates) {
+            const temporaryMarker = new ol.Feature({
+                geometry: new ol.geom.Point(coordinates),
+            });
+
+            temporaryMarker.setStyle(new ol.style.Style({
+                image: new ol.style.Icon({
+                     src: 'location_icon.svg.png',
+                    //src: 'https://docs.maptiler.com/openlayers/geojson-points/icon-plane-512.png',
+                    size: [512, 512],
+                    scale: 0.04,
+                    opacity: 1,
+                }),
+            }));
+
+            vectorSource.addFeature(temporaryMarker);
+        }
+
+        function moveMarkerToCoordinates(coordinates) {
+            vectorSource.getFeatures().forEach(feature => {
+                const name = feature.get('name');
+                if (name) {
+                    if (name in markerData && markerData[name].coordinates.length > 0) {
+                        feature.getGeometry().setCoordinates(coordinates);
+                    }
+                }
+            });
+        }
+
+        function updateSlider() {
+            const timeSlider = document.getElementById('time-slider');
+            const times = Object.values(markerData).reduce((acc, data) => [...acc, ...data.times], []);
+            timeSlider.setAttribute('max', times.length - 1);
+        }
+
+        const vectorSource = new ol.source.Vector({
+            format: new ol.format.GeoJSON(),
+            strategy: ol.loadingstrategy.bbox,
+        });
+
+        const vectorLayer = new ol.layer.Vector({
+            source: vectorSource,
+            style: new ol.style.Style({
+                image: new ol.style.Icon({
+                     src: 'location_icon.svg.png',
+                    //src: 'https://docs.maptiler.com/openlayers/geojson-points/icon-plane-512.png',
+                    size: [512, 512],
+                    scale: 0.03,
+                }),
+            }),
+        });
+
         const map = new ol.Map({
             target: 'map',
-            controls: ol.control.defaults.defaults({ attribution: false }).extend([attribution]),
+            controls: ol.control.defaults.defaults({
+                attribution: false,
+            }).extend([attribution]),
             layers: [
-                // Add a tile layer (you can replace this with your desired base map)
                 new ol.layer.Tile({
                     source: source,
                 }),
-                // Add a vector layer to load GeoJSON data
-                new ol.layer.Vector({
-                    source: new ol.source.Vector({
-                        url: geoJsonUrl,
-                        format: new ol.format.GeoJSON(),
-                    }),
-                    style: new ol.style.Style({
-                        image: new ol.style.Icon({
-                            // src: 'https://docs.maptiler.com/openlayers/geojson-points/icon-plane-512.png',
-                            src: 'location_icon.svg.png',
-                            size: [512, 512],
-                            scale: 0.03
-                        })
-                    }),
-                }),
+                vectorLayer,
             ],
             view: new ol.View({
-                center: ol.proj.fromLonLat([-110.7919148, 38.4065268]), // Set the center to the provided coordinates
-                zoom: 13, // Set the zoom level to 13
+                center: ol.proj.fromLonLat([-110.7919148, 38.4065268]),
+                zoom: 16,
             }),
-
-
         });
 
-        // Create an overlay to show the popup
         const overlay = new ol.Overlay({
             element: document.createElement('div'),
             positioning: 'bottom-center',
@@ -124,7 +361,6 @@
         });
         map.addOverlay(overlay);
 
-        // Function to show the popup on marker click
         map.on('click', function (event) {
             const feature = map.forEachFeatureAtPixel(event.pixel, function (feature) {
                 return feature;
@@ -132,18 +368,12 @@
 
             if (feature) {
                 const coordinates = feature.getGeometry().getCoordinates();
-                // const properties = feature.getProperties().properties;
-                console.log(feature.values_.name);
-
-                dateTime = new Date(feature.values_.time);
-                formattedDate = dateTime.toLocaleString('en-us', { year:"numeric", month:"numeric", day:"numeric", hour: "numeric", minute: "numeric"})
-
                 const content = `<div class="popup">
-                                    <p>Name: ${feature.values_.name}</p>
-                                    <p>Label: ${feature.values_.label}</p>
-                                    <p>Time: ${formattedDate}</p>
-                                    <p>Hardware: ${feature.values_.hardware}</p>
-                                    <p>Node Type: ${feature.values_.node_type}</p>
+                                    <span><b>Name: </b>${feature.values_.name}</span></br>
+                                    <span><b>Label: </b>${feature.values_.label}</span></br>
+                                    <span><b>Time: </b>${feature.values_.time}</span></br>
+                                    <span><b>Hardware: </b>${feature.values_.hardware}</span></br>
+                                    <span><b>Node Type: </b>${feature.values_.node_type}</span>
                                 </div>`;
 
                 overlay.getElement().innerHTML = content;
@@ -153,7 +383,6 @@
             }
         });
 
-        // Change mouse cursor when over marker
         map.on('pointermove', function (e) {
             if (e.dragging) {
                 overlay.setPosition(undefined);
@@ -164,67 +393,170 @@
             map.getTargetElement().style.cursor = hit ? 'pointer' : '';
         });
 
-        function updateFeatureList(features) {
-            const featureList = document.getElementById('feature-list');
-            featureList.innerHTML = '';
+        setInterval(updateGeoJSON, 9000);
 
-            features.forEach(feature => {
+        updateGeoJSON();
+
+        function downloadSelected() {
+            const name = document.getElementById('nameTimeSlider').innerHTML;
+            const data = markerData[name];
+
+            if (data) {
+                const jsonData = {
+                    name: name,
+                    times: data.times,
+                    coordinates: data.coordinates.map(coord => ol.proj.toLonLat(coord))
+                };
+
+                const jsonContent = JSON.stringify(jsonData);
+
+                const blob = new Blob([jsonContent], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${name}_data.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        function downloadAllData() {
+            let allData = [];
+
+            Object.keys(markerData).forEach(name => {
+                const jsonData = {
+                    name: name,
+                    times: markerData[name].times,
+                    coordinates: markerData[name].coordinates.map(coord => ol.proj.toLonLat(coord))
+                };
+
+                allData.push(jsonData);
+            });
+
+            const jsonContent = JSON.stringify(allData);
+
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'all_data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function addTag() {
+            const name = document.getElementById('nameTimeSlider').innerHTML;
+            const tagInput = document.getElementById('tag-input');
+            const tag = tagInput.value.trim();
+
+            if (name && tag) {
+                // Do something with the tag, e.g., store it, display it, etc.
+                console.log(`Tag "${tag}" added to device "${name}"`);
+                // Clear the input field after adding the tag
+                tagInput.value = '';
+            }
+        }
+
+
+        let emergencyList = [];
+        function sendEmergencySignal() {
+            const name = document.getElementById('nameTimeSlider').innerHTML;
+
+            if (name && !emergencyList.includes(name)) {
+                const emergencyIcon = document.getElementById('emergency-icon');
+                emergencyIcon.src = 'https://img.icons8.com/ios-filled/50/FF0000/siren.png';
+                // Add the device to the emergency list
+                addToEmergencyList(name);
+                // Perform actions related to sending an emergency signal
+                console.log(`Emergency signal sent for device "${name}"`);
+            }
+        }
+
+
+
+        function addToEmergencyList(deviceName) {
+            const emergencyListPanel = document.getElementById('emergency-device-list');
+
+            console.log(emergencyList);
+            if (!emergencyList.includes(deviceName)) {
+                emergencyList.push(deviceName);
                 const listItem = document.createElement('li');
-                const anchorElement = document.createElement('a');
-                anchorElement.href = '#';
-                anchorElement.textContent = feature.values_.name;
-                anchorElement.addEventListener('click', function () {
-                    const coordinates = feature.getGeometry().getCoordinates();
-                    map.getView().setCenter(coordinates);
-                    map.getView().setZoom(17); 
+
+                const emergencyButton = document.createElement('a');
+                emergencyButton.innerHTML = deviceName + ' ';
+                emergencyButton.href = '#';
+                emergencyButton.onclick = function () {
+                    zoomToMarker(deviceName);
+                };
+                listItem.appendChild(emergencyButton);
+
+                // Create a remove button (X)
+                const removeButton = document.createElement('a');
+                removeButton.innerHTML = '(&times;)'; // Unicode for '×' (multiplication sign)
+                removeButton.href = '#';
+                removeButton.title = 'Remove From Emergency';
+                removeButton.onclick = function () {
+                    removeDeviceFromEmergencyList(deviceName, listItem);
+                };
+
+                // Append the remove button to the list item
+                listItem.appendChild(removeButton);
+
+                emergencyListPanel.appendChild(listItem);
+
+                // Show the emergency device panel
+                showEmergencyPanel();
+            }
+        }
+
+        function zoomToMarker(deviceName) {
+            const feature = vectorSource.getFeatures().find(feature => feature.get('name') === deviceName);
+            if (feature) {
+                const coordinates = feature.getGeometry().getCoordinates();
+                map.getView().animate({
+                    center: coordinates,
+                    zoom: 22,
+                    duration: 1000,
                 });
-
-                listItem.appendChild(anchorElement);
-                featureList.appendChild(listItem);
-            });
+            }
         }
 
-        // Function to update the selected time text
-        function updateSelectedTime(time) {
-            document.getElementById('selected-time').getElementsByTagName('span')[0].textContent = time;
+        function removeDeviceFromEmergencyList(deviceName, listItem) {
+            const emergencyListPanel = document.getElementById('emergency-device-list');
+            const index = emergencyList.indexOf(deviceName);
+
+            if (index !== -1) {
+                emergencyList.splice(index, 1);
+            }
+            emergencyListPanel.removeChild(listItem);
+
+            if (emergencyList.length === 0) {
+                hideEmergencyPanel();
+            }
+
+            const emergencyIcon = document.getElementById('emergency-icon');
+            emergencyIcon.src = 'https://img.icons8.com/ios-filled/50/000000/siren.png';
         }
 
 
-        // Event listener for time slider changes
-        document.getElementById('time-slider').addEventListener('input', function (event) {
-            const sliderValue = event.target.value;
-            const totalFeatures = map.getLayers().getArray()[1].getSource().getFeatures().length;
-            const selectedFeatureIndex = Math.floor((sliderValue / 100) * totalFeatures);
-            const selectedFeature = map.getLayers().getArray()[1].getSource().getFeatures()[selectedFeatureIndex];
-            const selectedTime = selectedFeature.values_.time;
+        function hideEmergencyPanel() {
+            const emergencyPanel = document.getElementById('emergency-device-panel');
+            emergencyPanel.classList.add('hidden');
+        }
 
-            updateSelectedTime(selectedTime);
-        });
+        function showEmergencyPanel() {
+            const emergencyPanel = document.getElementById('emergency-device-panel');
+            emergencyPanel.classList.remove('hidden');
+        }
 
-        // Refresh the GeoJSON data every 9 seconds
-        setInterval(function () {
-            map.getLayers().forEach(function (layer) {
-                console.log("updating....");
-                if (layer.getSource() instanceof ol.source.Vector) {
-                    layer.getSource().clear();
-                    fetch(geoJsonUrl)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Add features to the vector layer
-                            const features = new ol.format.GeoJSON().readFeatures(data, {
-                                dataProjection: 'EPSG:4326',
-                                featureProjection: 'EPSG:3857'
-                            });
-                            layer.getSource().addFeatures(features);
-                            updateFeatureList(features);
-                            updateSelectedTime(features[0].values_.time);
-                        })
-                        .catch(error => {
-                            console.error('Error fetching GeoJSON data:', error);
-                        });
-                }
-            });
-        }, 9000);
+        document.getElementById('download-button').addEventListener('click', downloadSelected);
+
 
     </script>
 </body>
